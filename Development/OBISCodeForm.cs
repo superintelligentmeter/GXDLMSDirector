@@ -34,7 +34,7 @@
 using System;
 using System.Windows.Forms;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+
 using Gurux.DLMS.ManufacturerSettings;
 using Gurux.DLMS.Objects;
 using Gurux.DLMS.Enums;
@@ -62,12 +62,7 @@ namespace GXDLMSDirector
             }
             OriginalTarget = item;
             //Create clone from original items.
-            MemoryStream ms = new MemoryStream();
-            BinaryFormatter bf = new BinaryFormatter();
-            bf.Serialize(ms, item);
-            ms.Position = 0;
-            Target = (GXObisCode)bf.Deserialize(ms);
-            ms.Close();
+            Target = EditorClone.Copy(item);
             ObisCodeCollection = collection;
             ShowInterfaces();
             if (Target.ObjectType == ObjectType.None)

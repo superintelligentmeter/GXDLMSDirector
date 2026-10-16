@@ -37,7 +37,9 @@ using System.IO;
 using System.Threading;
 using System.Reflection;
 using Gurux.Common;
+#if NETFRAMEWORK
 using System.Deployment.Application;
+#endif
 using Microsoft.Win32;
 using System.Diagnostics;
 using Gurux.DLMS.Extension;
@@ -133,6 +135,12 @@ namespace GXDLMSDirector
         [STAThread]
         static void Main()
         {
+            Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+            Application.SetDefaultFont(new System.Drawing.Font("Microsoft Sans Serif", 8.25F));
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Gurux.DLMS.UI.ApplicationTypography.Install();
+            ApplicationWindowIcons.Install();
             //Allow only one instance.
             bool first;
             try
@@ -158,7 +166,7 @@ namespace GXDLMSDirector
                         Properties.Settings.Default.Save();
                         Gurux.DLMS.UI.GXDlmsUi.Upgrade();
                     }
-#if (NET46)
+#if NET46 || NET10_0_OR_GREATER
                     //This is needed to make Gurux.MQTT visible.
                     try
                     {
@@ -275,6 +283,7 @@ namespace GXDLMSDirector
         /// </summary>
         private static void SetAddRemoveProgramsIcon()
         {
+#if NETFRAMEWORK
             // only run if clickonce deployed, on first run only
             if (!System.Diagnostics.Debugger.IsAttached && ApplicationDeployment.IsNetworkDeployed
             && ApplicationDeployment.CurrentDeployment.IsFirstRun)
@@ -299,6 +308,7 @@ namespace GXDLMSDirector
                 {
                 }
             }
+#endif
         }
     }
 }

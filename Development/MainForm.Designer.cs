@@ -64,7 +64,7 @@ namespace GXDLMSDirector
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.menuStrip1 = new GXDLMSDirector.CaptionMenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.NewMnu = new System.Windows.Forms.ToolStripMenuItem();
             this.AddDeviceMnu = new System.Windows.Forms.ToolStripMenuItem();
@@ -218,27 +218,15 @@ namespace GXDLMSDirector
             this.UseMeterTimeZoneBtn = new System.Windows.Forms.ToolStripButton();
             this.DeleteBtn = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
-            this.NewListTBtn = new System.Windows.Forms.ToolBarButton();
-            this.OpenTBtn = new System.Windows.Forms.ToolBarButton();
-            this.SaveTBtn = new System.Windows.Forms.ToolBarButton();
-            this.NewDeviceTBtn = new System.Windows.Forms.ToolBarButton();
-            this.Separator1TBtn = new System.Windows.Forms.ToolBarButton();
-            this.ConnectTBtn = new System.Windows.Forms.ToolBarButton();
-            this.MonitorTBtn = new System.Windows.Forms.ToolBarButton();
-            this.ReadAllTBtn = new System.Windows.Forms.ToolBarButton();
-            this.WriteAllTBtn = new System.Windows.Forms.ToolBarButton();
-            this.Separator2TBtn = new System.Windows.Forms.ToolBarButton();
-            this.PropertiesTBtn = new System.Windows.Forms.ToolBarButton();
-            this.RemoveTBtn = new System.Windows.Forms.ToolBarButton();
             this.ListView = new System.Windows.Forms.TabPage();
             this.ObjectList = new System.Windows.Forms.ListView();
             this.DescriptionColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.TreeView = new System.Windows.Forms.TabPage();
             this.ObjectTree = new System.Windows.Forms.TreeView();
-            this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.splitter1 = new System.Windows.Forms.Splitter();
+            this.tabControl1 = new GXDLMSDirector.FlatShellTabControl();
+            this.splitter1 = new GXDLMSDirector.FlatShellSplitter();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.tabControl3 = new System.Windows.Forms.TabControl();
+            this.tabControl3 = new GXDLMSDirector.FlatShellTabControl();
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.ConformanceTests = new System.Windows.Forms.ListView();
             this.DeviceCh = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -268,19 +256,19 @@ namespace GXDLMSDirector
             this.toolStripMenuItem30 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.ConformanceDelete = new System.Windows.Forms.ToolStripMenuItem();
-            this.splitter4 = new System.Windows.Forms.Splitter();
+            this.splitter4 = new GXDLMSDirector.FlatShellSplitter();
             this.EventsView = new System.Windows.Forms.TextBox();
             this.NotificationMnu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.NotificationCopy = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.NotificationClear = new System.Windows.Forms.ToolStripMenuItem();
-            this.splitter3 = new System.Windows.Forms.Splitter();
+            this.splitter3 = new GXDLMSDirector.FlatShellSplitter();
             this.TraceView = new System.Windows.Forms.TextBox();
             this.TraceMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.CopyTrace = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem22 = new System.Windows.Forms.ToolStripSeparator();
             this.clearTraceMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.splitter2 = new System.Windows.Forms.Splitter();
+            this.splitter2 = new GXDLMSDirector.FlatShellSplitter();
             this.ObjectValueView = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.DeviceList = new System.Windows.Forms.ListView();
@@ -288,7 +276,7 @@ namespace GXDLMSDirector
             this.ObjectPanelFrame = new System.Windows.Forms.Panel();
             this.HelpBtn = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.tabControl2 = new System.Windows.Forms.TabControl();
+            this.tabControl2 = new GXDLMSDirector.FlatShellTabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.PropertyErrorView = new System.Windows.Forms.DataGridView();
@@ -296,7 +284,7 @@ namespace GXDLMSDirector
             this.Accessrights = new System.Windows.Forms.DataGridView();
             this.tabPage8 = new System.Windows.Forms.TabPage();
             this.MethodAccess = new System.Windows.Forms.DataGridView();
-            this.DeviceInfoView = new System.Windows.Forms.TabControl();
+            this.DeviceInfoView = new GXDLMSDirector.FlatShellTabControl();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.DeviceGb = new System.Windows.Forms.GroupBox();
             this.Negotiated = new System.Windows.Forms.Label();
@@ -341,7 +329,7 @@ namespace GXDLMSDirector
             this.tabPage5 = new System.Windows.Forms.TabPage();
             this.ErrorsView = new System.Windows.Forms.ListView();
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.DeviceListView = new System.Windows.Forms.TabControl();
+            this.DeviceListView = new GXDLMSDirector.FlatShellTabControl();
             this.DevicesTab = new System.Windows.Forms.TabPage();
             this.BroadcastKeyTb = new System.Windows.Forms.TextBox();
             this.BroadcastKeyLbl = new System.Windows.Forms.Label();
@@ -1674,65 +1662,29 @@ namespace GXDLMSDirector
             this.toolStripButton1.Text = "Technical support...";
             this.toolStripButton1.Click += new System.EventHandler(this.ContentsMnu_Click);
             // 
-            // NewListTBtn
             // 
-            this.NewListTBtn.ImageIndex = 0;
-            this.NewListTBtn.Name = "NewListTBtn";
             // 
-            // OpenTBtn
             // 
-            this.OpenTBtn.ImageIndex = 1;
-            this.OpenTBtn.Name = "OpenTBtn";
             // 
-            // SaveTBtn
             // 
-            this.SaveTBtn.ImageIndex = 2;
-            this.SaveTBtn.Name = "SaveTBtn";
             // 
-            // NewDeviceTBtn
             // 
-            this.NewDeviceTBtn.ImageIndex = 3;
-            this.NewDeviceTBtn.Name = "NewDeviceTBtn";
             // 
-            // Separator1TBtn
             // 
-            this.Separator1TBtn.Name = "Separator1TBtn";
-            this.Separator1TBtn.Style = System.Windows.Forms.ToolBarButtonStyle.Separator;
             // 
-            // ConnectTBtn
             // 
-            this.ConnectTBtn.ImageIndex = 4;
-            this.ConnectTBtn.Name = "ConnectTBtn";
             // 
-            // MonitorTBtn
             // 
-            this.MonitorTBtn.ImageIndex = 5;
-            this.MonitorTBtn.Name = "MonitorTBtn";
             // 
-            // ReadAllTBtn
             // 
-            this.ReadAllTBtn.ImageIndex = 6;
-            this.ReadAllTBtn.Name = "ReadAllTBtn";
             // 
-            // WriteAllTBtn
             // 
-            this.WriteAllTBtn.ImageIndex = 7;
-            this.WriteAllTBtn.Name = "WriteAllTBtn";
             // 
-            // Separator2TBtn
             // 
-            this.Separator2TBtn.Name = "Separator2TBtn";
-            this.Separator2TBtn.Style = System.Windows.Forms.ToolBarButtonStyle.Separator;
             // 
-            // PropertiesTBtn
             // 
-            this.PropertiesTBtn.ImageIndex = 8;
-            this.PropertiesTBtn.Name = "PropertiesTBtn";
             // 
-            // RemoveTBtn
             // 
-            this.RemoveTBtn.ImageIndex = 9;
-            this.RemoveTBtn.Name = "RemoveTBtn";
             // 
             // ListView
             // 
@@ -1782,7 +1734,7 @@ namespace GXDLMSDirector
             // 
             this.ObjectTree.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.ObjectTree.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ObjectTree.HideSelection = false;
+            this.ObjectTree.HideSelection = true;
             this.ObjectTree.ImageIndex = 0;
             this.ObjectTree.ImageList = this.imageList1;
             this.ObjectTree.Location = new System.Drawing.Point(3, 3);
@@ -2830,8 +2782,8 @@ namespace GXDLMSDirector
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.ClientSize = new System.Drawing.Size(913, 691);
             this.Controls.Add(this.DeviceListView);
             this.Controls.Add(this.DeviceInfoView);
@@ -2924,18 +2876,6 @@ namespace GXDLMSDirector
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripMenuItem DeleteMnu;
-        private System.Windows.Forms.ToolBarButton NewListTBtn;
-        private System.Windows.Forms.ToolBarButton OpenTBtn;
-        private System.Windows.Forms.ToolBarButton SaveTBtn;
-        private System.Windows.Forms.ToolBarButton NewDeviceTBtn;
-        private System.Windows.Forms.ToolBarButton Separator1TBtn;
-        private System.Windows.Forms.ToolBarButton ConnectTBtn;
-        private System.Windows.Forms.ToolBarButton MonitorTBtn;
-        private System.Windows.Forms.ToolBarButton ReadAllTBtn;
-        private System.Windows.Forms.ToolBarButton WriteAllTBtn;
-        private System.Windows.Forms.ToolBarButton Separator2TBtn;
-        private System.Windows.Forms.ToolBarButton PropertiesTBtn;
-        private System.Windows.Forms.ToolBarButton RemoveTBtn;
         private System.Windows.Forms.ToolStripButton NewBtn;
         private System.Windows.Forms.ToolStripButton OpenBtn;
         private System.Windows.Forms.ToolStripButton SaveBtn;
@@ -3183,4 +3123,3 @@ namespace GXDLMSDirector
         private System.Windows.Forms.Label BroadcastKeyLbl;
     }
 }
-

@@ -1544,7 +1544,7 @@ namespace GXDLMSDirector
         {
             try
             {
-                System.Diagnostics.Process.Start("https://www.gurux.fi/GXDLMSDirectorExample");
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://www.gurux.fi/GXDLMSDirectorExample") { UseShellExecute = true });
             }
             catch (Exception Ex)
             {

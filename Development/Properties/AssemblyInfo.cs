@@ -56,3 +56,4 @@ using System.Runtime.InteropServices;
 [assembly: Guid("e78762b5-4e85-45c8-a9fa-e95786f77684")]
 [assembly: AssemblyVersion("0.0.0.0")]
 [assembly: AssemblyFileVersion("0.0.0.0")]
+[assembly: System.Runtime.Versioning.SupportedOSPlatform("windows6.1")]

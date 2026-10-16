@@ -1,4 +1,4 @@
-﻿//
+//
 // --------------------------------------------------------------------------
 //  Gurux Ltd
 //
@@ -1246,7 +1246,7 @@ namespace GXDLMSDirector
         {
             try
             {
-                Process.Start("https://www.gurux.fi/MacroEditor");
+                Process.Start(new System.Diagnostics.ProcessStartInfo("https://www.gurux.fi/MacroEditor") { UseShellExecute = true });
             }
             catch (Exception Ex)
             {

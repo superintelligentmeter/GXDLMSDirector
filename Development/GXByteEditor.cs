@@ -34,6 +34,7 @@
 using System;
 using System.Windows.Forms;
 using Gurux.DLMS;
+using Gurux.DLMS.UI;
 using System.Text;
 
 namespace GXDLMSDirector
@@ -43,9 +44,11 @@ namespace GXDLMSDirector
         public GXByteEditor(byte[] value)
         {
             InitializeComponent();
+            ApplyLayout();
             if (value != null)
             {
-                if (GXByteBuffer.IsAsciiString(value))
+                // Native text boxes truncate at NUL; use hex to preserve every byte.
+                if (GXByteBuffer.IsAsciiString(value) && Array.IndexOf(value, (byte)0) == -1)
                 {
                     ValueTb.Text = ASCIIEncoding.ASCII.GetString(value);
                     AsciiCb.Checked = true;
@@ -55,6 +58,29 @@ namespace GXDLMSDirector
                     ValueTb.Text = Gurux.Common.GXCommon.ToHex(value);
                 }
             }
+        }
+
+        private void ApplyLayout()
+        {
+            SuspendLayout();
+            var table = ModernPresentation.CompactSurface(this);
+            ModernPresentation.CompactRow(table, "Value", ValueTb, height: 160);
+            ValueTb.Dock = DockStyle.Fill;
+            ValueTb.ScrollBars = ScrollBars.Vertical;
+            ModernPresentation.CompactRow(table, "Format", AsciiCb);
+            table.AutoSize = false;
+            table.Dock = DockStyle.Fill;
+            table.RowStyles[0] = new RowStyle(SizeType.Percent, 100);
+            table.TabIndex = 0;
+            Controls.Add(table);
+            var footer = ModernPresentation.DialogFooter(this, OKBtn, CancelBtn);
+            footer.TabIndex = 1;
+            OKBtn.TabIndex = 0;
+            CancelBtn.TabIndex = 1;
+            ClientSize = new System.Drawing.Size((int)(640 * DeviceDpi / 96f), (int)(320 * DeviceDpi / 96f));
+            ModernPresentation.Apply(this);
+            ActiveControl = ValueTb;
+            ResumeLayout(true);
         }
 
         public byte[] Value

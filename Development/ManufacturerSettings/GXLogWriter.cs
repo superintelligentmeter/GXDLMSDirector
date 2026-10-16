@@ -188,7 +188,7 @@ namespace GXDLMS.ManufacturerSettings
                         ((TextWriterTraceListener)it).Writer.Close();
                     }
                     ((TextWriterTraceListener)it).Writer = new StreamWriter(GXLogWriter.LogPath);
-                    GXFileSystemSecurity.UpdateFileSecurity(GXLogWriter.LogPath);
+                    // Retain the file ACL inherited from its containing directory.
                     break;
                 }
             }

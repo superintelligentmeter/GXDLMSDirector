@@ -46,9 +46,13 @@ namespace GXDLMSDirector
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                DisposeOwnedViews();
+                if (components != null)
+                {
+                    components.Dispose();
+                }
             }
             base.Dispose(disposing);
         }
@@ -148,7 +152,6 @@ namespace GXDLMSDirector
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Values";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.GXValuesDlg_FormClosing);
             this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 

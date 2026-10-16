@@ -1,4 +1,4 @@
-﻿//
+//
 // --------------------------------------------------------------------------
 //  Gurux Ltd
 // 
@@ -42,6 +42,7 @@ namespace GXDLMSDirector
 {
     public partial class GXExternalMediaForm : Form
     {
+        [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
         public string FileName
         {
             get;
@@ -249,7 +250,7 @@ namespace GXDLMSDirector
                         w.Write(ms.GetBuffer(), 0, length);
                         w.Close();
                     }
-#if (NET46)
+#if NET46 || NET10_0_OR_GREATER
                     if (Path.GetExtension(path) == ".zip")
                     {
                         using (ZipArchive archive = ZipFile.OpenRead(path))

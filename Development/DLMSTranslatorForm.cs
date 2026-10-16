@@ -1,4 +1,4 @@
-﻿using Gurux.Common;
+using Gurux.Common;
 using Gurux.DLMS;
 using Gurux.DLMS.ASN;
 using Gurux.DLMS.Ecdsa;
@@ -967,7 +967,7 @@ namespace GXDLMSDirector
         {
             try
             {
-                Process.Start("https://www.gurux.fi/GXDLMSTranslatorHelp");
+                Process.Start(new System.Diagnostics.ProcessStartInfo("https://www.gurux.fi/GXDLMSTranslatorHelp") { UseShellExecute = true });
             }
             catch (Exception Ex)
             {

@@ -1,4 +1,4 @@
-﻿//
+//
 // --------------------------------------------------------------------------
 //  Gurux Ltd
 // 
@@ -33,13 +33,13 @@
 //---------------------------------------------------------------------------
 using System.Collections.Generic;
 using System.IO;
-using System.Web.UI;
+
 
 namespace Gurux.DLMS.Conformance.Test
 {
     class GXOutput
     {
-        public HtmlTextWriter writer;
+        public TextWriter writer;
         public List<string> Errors = new List<string>();
         public List<string> Warnings = new List<string>();
         public List<string> PreInfo = new List<string>();
@@ -57,7 +57,7 @@ namespace Gurux.DLMS.Conformance.Test
         {
             file = path;
             Stream stream = File.Open(file, FileMode.Create);
-            writer = new HtmlTextWriter(new StreamWriter(stream));
+            writer = new StreamWriter(stream);
             writer.WriteLine("<!DOCTYPE html >");
             writer.WriteLine("<html>");
             writer.WriteLine("<style>");
@@ -99,7 +99,7 @@ namespace Gurux.DLMS.Conformance.Test
                 writer.Write("<br/>");
             }
             // Begin Errors.
-            writer.RenderBeginTag("Errors");
+            writer.Write("<section>");
             writer.Write("<h2>Errors</h2>");
             if (Errors.Count == 0)
             {
@@ -113,9 +113,9 @@ namespace Gurux.DLMS.Conformance.Test
                     writer.Write("<br/>");
                 }
             }
-            writer.RenderEndTag();
+            writer.Write("</section>");
             // Begin Warnings.
-            writer.RenderBeginTag("Warnings");
+            writer.Write("<section>");
             writer.Write("<h2>Warnings</h2>");
             if (Warnings.Count == 0)
             {
@@ -129,11 +129,11 @@ namespace Gurux.DLMS.Conformance.Test
                     writer.Write("<br/>");
                 }
             }
-            writer.RenderEndTag();
+            writer.Write("</section>");
             // Begin Info.
-            writer.RenderBeginTag("Info");
+            writer.Write("<section>");
             writer.Write("<h2>Info</h2>");
-            writer.RenderEndTag();
+            writer.Write("</section>");
             foreach (string it in Info)
             {
                 writer.WriteLine(it);

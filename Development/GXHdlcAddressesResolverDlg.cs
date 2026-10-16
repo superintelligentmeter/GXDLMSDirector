@@ -242,7 +242,7 @@ namespace GXDLMSDirector
             {
                 string str = "https://www.gurux.fi/GXDLMSHdlcAddressResolverHelp";
                 // Show online help.
-                Process.Start(str);
+                Process.Start(new System.Diagnostics.ProcessStartInfo(str) { UseShellExecute = true });
                 // Set flag to show that the Help event as been handled
                 hevent.Handled = true;
             }

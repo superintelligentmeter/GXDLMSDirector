@@ -34,7 +34,7 @@
 using System;
 using System.Windows.Forms;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+
 using Gurux.DLMS.ManufacturerSettings;
 using Gurux.DLMS.Enums;
 
@@ -56,12 +56,7 @@ namespace GXDLMSDirector
             //Create clone from original items.
             if (manufacturers != null)
             {
-                MemoryStream ms = new MemoryStream();
-                BinaryFormatter bf = new BinaryFormatter();
-                bf.Serialize(ms, manufacturers);
-                ms.Position = 0;
-                Manufacturers = (GXManufacturerCollection)bf.Deserialize(ms);
-                ms.Close();
+                Manufacturers = EditorClone.Copy(manufacturers);
                 bool bSelected = false;
                 foreach (GXManufacturer it in Manufacturers)
                 {

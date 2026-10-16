@@ -54,7 +54,9 @@ using Gurux.Net;
 using System.Text;
 using static System.Windows.Forms.ListView;
 using System.Reflection;
+#if NETFRAMEWORK
 using System.Deployment.Application;
+#endif
 using Gurux.DLMS.Objects.Enums;
 using GXDLMSDirector.Macro;
 using Gurux.DLMS.UI.Ecdsa;
@@ -62,8 +64,12 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace GXDLMSDirector
 {
-    public partial class MainForm : Form
+    public partial class MainForm : CaptionMenuForm
     {
+
+
+
+
         GXNet events;
 
         /// <summary>
@@ -214,7 +220,6 @@ namespace GXDLMSDirector
             mruManager.OnOpenMRUFile += new OpenMRUFileEventHandler(this.OnOpenMRUFile);
             //Add access right view.
             Accessrights.AutoGenerateColumns = false;
-            Accessrights.AutoSize = true;
             Accessrights.Columns.Clear();
             DataGridViewColumn column = new DataGridViewTextBoxColumn();
             column.DataPropertyName = "Index";
@@ -236,13 +241,11 @@ namespace GXDLMSDirector
             Accessrights.CellFormatting += Accessrights_CellFormatting;
             Accessrights.AllowUserToAddRows = false;
             Accessrights.AllowUserToDeleteRows = false;
-            Accessrights.AutoSize = true;
 
             //Add method access rights.
 
             //Add access right view.
             MethodAccess.AutoGenerateColumns = false;
-            MethodAccess.AutoSize = true;
             MethodAccess.Columns.Clear();
             column = new DataGridViewTextBoxColumn();
             column.DataPropertyName = "Index";
@@ -258,11 +261,9 @@ namespace GXDLMSDirector
             MethodAccess.CellValueChanged += Accessrights_MethodCellValueChanged;
             MethodAccess.AllowUserToAddRows = false;
             MethodAccess.AllowUserToDeleteRows = false;
-            MethodAccess.AutoSize = true;
 
             //Add property error view.
             PropertyErrorView.AutoGenerateColumns = false;
-            PropertyErrorView.AutoSize = true;
             PropertyErrorView.Columns.Clear();
             column = new DataGridViewTextBoxColumn();
             column.DataPropertyName = "Index";
@@ -281,7 +282,92 @@ namespace GXDLMSDirector
             PropertyErrorView.Columns.Add(column);
             PropertyErrorView.AllowUserToAddRows = false;
             PropertyErrorView.AllowUserToDeleteRows = false;
-            PropertyErrorView.AutoSize = true;
+            // These grids are docked to their tab pages. AutoSize on the grid
+            // itself shrinks its height to its preferred row size and clips the
+            // populated rows; let DockStyle.Fill own the available space instead.
+            Accessrights.AutoSize = false;
+            MethodAccess.AutoSize = false;
+            PropertyErrorView.AutoSize = false;
+            // TabPage.Padding is ignored by dock-filled grids here. Host panels
+            // provide a consistent top gap and left inset across all three tables.
+            InsetTabularView(PropertyErrorView, tabPage3);
+            InsetTabularView(Accessrights, tabPage2);
+            InsetTabularView(MethodAccess, tabPage8);
+            ModernPresentation.Apply(this);
+
+            panel1.Layout += (_, _) => UpdateOutputDividers();
+            SystemColorsChanged += (_, _) => ShellPresentation.Apply(this);
+            ModernIcons.Apply(toolStrip1);
+            ModernIcons.Apply(menuStrip1);
+
+
+
+            TreeIcons.Apply(imageList1, ObjectTree);
+            TreeIcons.ApplyStatus(imageList2, ConformanceTests);
+            IntegrateMenu(menuStrip1);
+            FrameWorkspaceSections();
+            BackColor = ShellPresentation.Chrome;
+            ShellPresentation.Apply(this);
+        }
+
+        private RoundedShellFrame navigationFrame, resultsFrame;
+
+        private static void InsetTabularView(DataGridView grid, TabPage page)
+        {
+            page.Padding = Padding.Empty;
+            var host = new Panel
+            {
+                Name = grid.Name + "Host",
+                Dock = DockStyle.Fill,
+                Padding = new Padding(3, 8, 3, 3),
+                BackColor = ShellPresentation.Surface
+            };
+            page.Controls.Remove(grid);
+            grid.Dock = DockStyle.Fill;
+            host.Controls.Add(grid);
+            page.Controls.Add(host);
+        }
+
+        private void FrameWorkspaceSections()
+        {
+            SuspendLayout();
+            try
+            {
+                RoundedShellFrame Wrap(Control control)
+                {
+                    int index = Controls.GetChildIndex(control);
+                    var frame = new RoundedShellFrame { Dock = control.Dock, Size = control.Size, Name = control.Name + "Section" };
+                    Controls.Add(frame);
+                    Controls.SetChildIndex(frame, index);
+                    frame.Controls.Add(control);
+                    control.Dock = DockStyle.Fill;
+                    return frame;
+                }
+                navigationFrame = Wrap(tabControl1);
+                resultsFrame = Wrap(panel1);
+                var workspace = new RoundedShellFrame { Dock = DockStyle.Fill, Name = "WorkspaceSection" };
+                Controls.Add(workspace);
+                Controls.SetChildIndex(workspace, 0);
+                foreach (Control control in new Control[] { DeviceListView, DeviceInfoView, tabControl2, ObjectValueView })
+                    workspace.Controls.Add(control);
+                UpdateResultsVisibility();
+            }
+            finally { ResumeLayout(true); }
+        }
+
+        private void UpdateResultsVisibility()
+        {
+            // Use intended state, even when the containing form/frame is hidden.
+            bool visible = traceLevel != 0 || notificationLevel != 0 || conformanceTestsToolStripMenuItem1.Checked;
+            resultsFrame.Visible = panel1.Visible = splitter2.Visible = visible;
+        }
+        private void UpdateOutputDividers()
+        {
+            // Hidden output panes must not leave orphan splitters at the outer edge.
+            bool traceDivider = TraceView.Visible && (EventsView.Visible || tabControl3.Visible);
+            bool eventDivider = EventsView.Visible && tabControl3.Visible;
+            if (splitter3.Visible != traceDivider) splitter3.Visible = traceDivider;
+            if (splitter4.Visible != eventDivider) splitter4.Visible = eventDivider;
         }
 
         private bool IsProfileGenericTarget(object target)
@@ -362,6 +448,11 @@ namespace GXDLMSDirector
 
         public void StatusChanged(object sender, DeviceState state)
         {
+            if (sender != null && ObjectTreeItems[sender] is TreeNode deviceNode)
+            {
+                deviceNode.ImageIndex = deviceNode.SelectedImageIndex =
+                    TreeIcons.DeviceIndex((state & DeviceState.Connected) != 0);
+            }
             if (state == DeviceState.Connecting)
             {
                 if (MacroEditor.Record)
@@ -1022,6 +1113,10 @@ namespace GXDLMSDirector
                             {
                                 view.ErrorProvider.SetError(it, GXDLMSDirector.Properties.Resources.ValueChangedTxt);
                             }
+                            else if (index != 0)
+                            {
+                                view.ErrorProvider.SetError(it, string.Empty);
+                            }
                             else
                             {
                                 view.ErrorProvider.Clear();
@@ -1058,14 +1153,7 @@ namespace GXDLMSDirector
                 TreeNode node = ObjectTreeItems[sender] as TreeNode;
                 if (node != null)
                 {
-                    if (sender is GXDLMSProfileGeneric)
-                    {
-                        node.ImageIndex = node.SelectedImageIndex = 8;
-                    }
-                    else
-                    {
-                        node.ImageIndex = node.SelectedImageIndex = dirty ? 10 : 7;
-                    }
+                    node.ImageIndex = node.SelectedImageIndex = TreeIcons.ValueIndex(sender);
                 }
                 GXDLMSMeter m = sender.Parent.Tag as GXDLMSMeter;
                 GXDLMSDevice dev = m as GXDLMSDevice;
@@ -1634,7 +1722,7 @@ namespace GXDLMSDirector
         {
             using (Stream stream = File.Open(path, FileMode.Create))
             {
-                GXFileSystemSecurity.UpdateFileSecurity(path);
+                // Retain the file ACL inherited from its containing directory.
                 List<Type> types = new List<Type>(GXDLMSClient.GetObjectTypes());
                 types.Add(typeof(GXDLMSAttributeSettings));
                 types.Add(typeof(GXDLMSAttribute));
@@ -2015,7 +2103,7 @@ namespace GXDLMSDirector
                 }
                 SaveXmlPositioning();
                 SetDirty(false);
-                Manufacturers.WriteManufacturerSettings();
+                ManufacturerSettingsStore.Save(Manufacturers, GXManufacturerCollection.ObisCodesPath);
                 foreach (GXDLMSMeter it in Devices)
                 {
                     if (it is GXDLMSDevice)
@@ -2120,7 +2208,7 @@ namespace GXDLMSDirector
                     }
                     xtw.WriteEndElement();
                     xtw.WriteStartElement("Views");
-                    Rectangle rc = this.tabControl1.Bounds;
+                    Rectangle rc = this.navigationFrame.Bounds;
                     xtw.WriteAttributeString("X", rc.X.ToString());
                     xtw.WriteAttributeString("Y", rc.Y.ToString());
                     xtw.WriteAttributeString("Width", rc.Width.ToString());
@@ -2282,7 +2370,7 @@ namespace GXDLMSDirector
                         }
                         else if (xtr.Name == "Views")
                         {
-                            tabControl1.SetBounds(int.Parse(xtr.GetAttribute("X")),
+                            navigationFrame.SetBounds(int.Parse(xtr.GetAttribute("X")),
                                                   int.Parse(xtr.GetAttribute("Y")),
                                                   int.Parse(xtr.GetAttribute("Width")),
                                                   int.Parse(xtr.GetAttribute("Height")));
@@ -3395,7 +3483,8 @@ namespace GXDLMSDirector
             }
             //Add device to device tree.
             TreeNode node = this.ObjectTree.Nodes[0].Nodes.Add(dev.Name);
-            node.SelectedImageIndex = node.ImageIndex = 2;
+            node.SelectedImageIndex = node.ImageIndex = dev is GXDLMSDevice device
+                ? TreeIcons.DeviceIndex((device.Status & DeviceState.Connected) != 0) : 2;
             node.Tag = dev;
             ObjectTreeItems[dev] = node;
             //Add device to device list.
@@ -3817,7 +3906,7 @@ namespace GXDLMSDirector
                 if (node == null)
                 {
                     node = deviceNode.Nodes.Add(it.ObjectType.ToString());
-                    node.SelectedImageIndex = node.ImageIndex = 11;
+                    node.SelectedImageIndex = node.ImageIndex = TreeIcons.ObjectIndex(it.ObjectType, true);
                     ObjectTreeItems[(it.Parent.Tag.GetHashCode() << 32) + it.ObjectType] = node;
                     objects = new GXDLMSObjectCollection();
                     objects.Tag = deviceNode.Tag;
@@ -3845,14 +3934,7 @@ namespace GXDLMSDirector
             item.Tag = it;
             item.Group = group;
             ObjectListItems.Add(it, item);
-            if (it is GXDLMSProfileGeneric)
-            {
-                node.SelectedImageIndex = node.ImageIndex = 8;
-            }
-            else
-            {
-                node.SelectedImageIndex = node.ImageIndex = 7;
-            }
+            node.SelectedImageIndex = node.ImageIndex = TreeIcons.ValueIndex(it);
             return item;
         }
 
@@ -4149,7 +4231,7 @@ namespace GXDLMSDirector
         {
             try
             {
-                Process.Start("https://www.gurux.fi/GXDLMSDirector");
+                Process.Start(new System.Diagnostics.ProcessStartInfo("https://www.gurux.fi/GXDLMSDirector") { UseShellExecute = true });
             }
             catch (Exception Ex)
             {
@@ -4309,10 +4391,14 @@ namespace GXDLMSDirector
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+
+
+
             try
             {
                 //Get the normal command lines arguments in case the EXE is called directly
                 List<string> list = new List<string>();
+#if NETFRAMEWORK
                 // this is how arguments are passed from windows explorer to clickonce installed apps when files are associated in explorer
                 if (AppDomain.CurrentDomain.SetupInformation.ActivationArguments?.ActivationData != null)
                 {
@@ -4322,6 +4408,7 @@ namespace GXDLMSDirector
                     }
                 }
                 else
+#endif
                 {
                     list.AddRange(Environment.GetCommandLineArgs());
                     list.RemoveAt(0);
@@ -5091,6 +5178,7 @@ namespace GXDLMSDirector
                         //Check if there are new app versions.
                         try
                         {
+#if NETFRAMEWORK
                             UpdateCheckInfo info = null;
                             //Check is Click once installed.
                             if (!Debugger.IsAttached && isConnected && ApplicationDeployment.IsNetworkDeployed)
@@ -5120,6 +5208,7 @@ namespace GXDLMSDirector
                                     main.BeginInvoke(new CheckUpdatesEventHandler(OnNewAppVersion), new object[] { main });
                                 }
                             }
+#endif
                         }
                         catch (Exception)
                         {
@@ -5158,7 +5247,7 @@ namespace GXDLMSDirector
         {
             try
             {
-                if (MessageBox.Show(this, GXDLMSDirector.Properties.Resources.UpdateManufacturersOnlineTxt, GXDLMSDirector.Properties.Resources.GXDLMSDirectorTxt, MessageBoxButtons.YesNoCancel) == DialogResult.Yes)
+                if (ManufacturerUpdateDialog.Confirm(this) == DialogResult.Yes)
                 {
                     GXManufacturerCollection.UpdateManufactureSettings();
                     Manufacturers = new GXManufacturerCollection();
@@ -5531,7 +5620,7 @@ namespace GXDLMSDirector
         private void UpdateTrace(byte level)
         {
             traceLevel = level;
-            panel1.Visible = level != 0 || EventsView.Visible || ConformanceTests.Visible;
+            UpdateResultsVisibility();
             TraceView.Visible = level != 0;
             noneToolStripMenuItem.Checked = level == 0;
             hexToolStripMenuItem.Checked = level == 1;
@@ -5698,7 +5787,7 @@ namespace GXDLMSDirector
         private void UpdateNotification(byte level)
         {
             notificationLevel = level;
-            panel1.Visible = level != 0 || TraceView.Visible || ConformanceTests.Visible;
+            UpdateResultsVisibility();
             splitter3.Visible = EventsView.Visible = level != 0;
             NotificationNone.Checked = level == 0;
             NotificationHex.Checked = level == 1;
@@ -6004,6 +6093,8 @@ namespace GXDLMSDirector
                 // Get the control where the user clicked
                 Point lpe = menuStrip1.PointToClient(hevent.MousePos);
                 Control ctl = this.GetChildAtPoint(this.PointToClient(hevent.MousePos));
+                if (ctl is RoundedShellFrame frame)
+                    ctl = frame.GetChildAtPoint(frame.PointToClient(hevent.MousePos));
                 string str = "https://www.gurux.fi/GXDLMSDirector";
                 if (ctl == toolStrip1 || ctl == menuStrip1)
                 {
@@ -6031,7 +6122,7 @@ namespace GXDLMSDirector
                     return;
                 }
                 // Show online help.
-                Process.Start(str);
+                Process.Start(new System.Diagnostics.ProcessStartInfo(str) { UseShellExecute = true });
                 // Set flag to show that the Help event as been handled
                 hevent.Handled = true;
             }
@@ -6061,7 +6152,7 @@ namespace GXDLMSDirector
                 {
                     ListViewItem li = target[0];
                     string path = Path.Combine((li.Tag as GXConformanceTest).Results, "Results.html");
-                    Process.Start(path);
+                    Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
                 }
             }
             catch (Exception Ex)
@@ -6090,7 +6181,7 @@ namespace GXDLMSDirector
                 {
                     ListViewItem li = target[0];
                     string path = Path.Combine((li.Tag as GXConformanceTest).Results, "Trace.txt");
-                    Process.Start(path);
+                    Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
                 }
             }
             catch (Exception Ex)
@@ -6206,6 +6297,7 @@ namespace GXDLMSDirector
                         ListViewItem tmp = new ListViewItem(Path.GetFileName((li.Tag as GXConformanceTest).Results));
                         tmp.SubItems.Add("");
                         tmp.Tag = sender;
+                        tmp.ImageIndex = sender.ErrorLevel;
                         ConformanceHistoryTests.Items.Insert(0, tmp);
                         li.ImageIndex = sender.ErrorLevel;
                         li.Selected = true;
@@ -6243,6 +6335,7 @@ namespace GXDLMSDirector
                             ListViewItem tmp = new ListViewItem(Path.GetFileName((li.Tag as GXConformanceTest).Results));
                             tmp.SubItems.Add("");
                             tmp.Tag = sender;
+                            tmp.ImageIndex = sender.ErrorLevel;
                             ConformanceHistoryTests.Items.Insert(0, tmp);
                             li.ImageIndex = sender.ErrorLevel;
                             li.Selected = true;
@@ -6398,7 +6491,7 @@ namespace GXDLMSDirector
         private void conformanceTestsToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             splitter4.Visible = conformanceTestsToolStripMenuItem1.Checked = !conformanceTestsToolStripMenuItem1.Checked;
-            panel1.Visible = EventsView.Visible || TraceView.Visible || conformanceTestsToolStripMenuItem1.Checked;
+            UpdateResultsVisibility();
             ConformanceTests.Visible = conformanceTestsToolStripMenuItem1.Checked;
             if (!conformanceTestsToolStripMenuItem1.Checked)
             {
@@ -6446,7 +6539,7 @@ namespace GXDLMSDirector
                 {
                     ListViewItem li = target[0];
                     string path = Path.Combine((li.Tag as GXConformanceTest).Results, "Values.txt");
-                    Process.Start(path);
+                    Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
                 }
             }
             catch (Exception Ex)
@@ -6490,7 +6583,7 @@ namespace GXDLMSDirector
                 if (target.Count == 1)
                 {
                     ListViewItem li = target[0];
-                    Process.Start((li.Tag as GXConformanceTest).Results);
+                    Process.Start(new System.Diagnostics.ProcessStartInfo((li.Tag as GXConformanceTest).Results) { UseShellExecute = true });
                 }
             }
             catch (Exception Ex)
@@ -7125,6 +7218,7 @@ namespace GXDLMSDirector
 
         private void UpdateToLatestVersionMnu_Click(object sender, EventArgs e)
         {
+#if NETFRAMEWORK
             try
             {
                 UpdateCheckInfo info = null;
@@ -7169,10 +7263,14 @@ namespace GXDLMSDirector
             {
                 Error.ShowError(this, Ex);
             }
+#else
+            MessageBox.Show(this, "This .NET 10 build is installed manually. An application updater has not been configured.", "Application updates", MessageBoxButtons.OK, MessageBoxIcon.Information);
+#endif
         }
 
         private void checkForNewUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
         {
+#if NETFRAMEWORK
             //Check if there are new app versions.
             try
             {
@@ -7219,6 +7317,9 @@ namespace GXDLMSDirector
             {
                 Error.ShowError(this, Ex);
             }
+#else
+            MessageBox.Show(this, "This .NET 10 build is installed manually. An application updater has not been configured.", "Application updates", MessageBoxButtons.OK, MessageBoxIcon.Information);
+#endif
         }
 
         private void AddToScheduleMenu_Click(object sender, EventArgs e)
@@ -7310,7 +7411,7 @@ namespace GXDLMSDirector
                 GXDLMSViewAttribute[] att = (GXDLMSViewAttribute[])SelectedView.GetType().GetCustomAttributes(typeof(GXDLMSViewAttribute), true);
                 string str = "https://www.gurux.fi/" + att[0].DLMSType.ToString();
                 // Show online help.
-                Process.Start(str);
+                Process.Start(new System.Diagnostics.ProcessStartInfo(str) { UseShellExecute = true });
             }
             catch (Exception Ex)
             {
