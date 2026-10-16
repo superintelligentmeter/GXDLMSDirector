@@ -1,3 +1,4 @@
+// Modified for the Intelmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 using System;
 using System.Collections.Generic;
 using System.Drawing;

@@ -1,3 +1,17 @@
+# Intelmeter fork of GXDLMSDirector
+
+This is an unofficial community fork, maintained under the Intelmeter GitHub account. It is not an official Gurux release and does not imply Gurux endorsement. Original Gurux attribution is retained below.
+
+License: **GPL-2.0-only**. The fork's contributions are distributed under the same license; original Gurux and third-party notices remain applicable. See [LICENSE](LICENSE), [MODIFICATIONS.txt](MODIFICATIONS.txt), [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt), and [RELEASE-COMPLIANCE.txt](RELEASE-COMPLIANCE.txt).
+
+Build on Windows with the .NET 10 SDK. Clone both Intelmeter repositories into sibling directories named GXDLMSDirector and Gurux.DLMS.UI.Net, then run from their parent directory:
+
+    dotnet build GXDLMSDirector/Development/GXDLMSDirector46.csproj -c Release -t:Rebuild
+
+The protocol library remains the official Gurux.DLMS 9.0.2609.2201 NuGet package. This GPL dependency is not exempt from redistribution obligations merely because it is unmodified.
+
+---
+
 ![alt tag](ui.png)
 
 

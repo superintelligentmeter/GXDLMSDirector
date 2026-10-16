@@ -1,5 +1,6 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Modified for the Intelmeter fork, 2026-10-16: .NET 10 sibling UI project integration; GPL-2.0-only.
 # Visual Studio Version 18
 VisualStudioVersion = 18.10.12217.157
 MinimumVisualStudioVersion = 10.0.40219.1

@@ -1,3 +1,4 @@
+<!-- Modified for the Intelmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" stroke-width="2">
 <path stroke="#424242" d="M24.485 24.485 A12 12 0 1 1 26.392 10 M16 5V7 M6 13H8"/>
 <polyline stroke="#007acc" stroke-linejoin="miter" points="7,18 11,18 14,11 18,23 21,16 25,16"/>

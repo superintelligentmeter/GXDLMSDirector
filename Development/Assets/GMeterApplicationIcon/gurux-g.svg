@@ -1,3 +1,4 @@
+<!-- Modified for the Intelmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" stroke-width="2">
 <polyline stroke="#168fe5" stroke-linejoin="round" points="26,9 22,4 9,4 4,9 4,23 9,28 23,28 27,24 27,18 18,18"/>
 <rect stroke="#007acc" x="9" y="9" width="12" height="5"/>

@@ -1,0 +1,10 @@
+Third-party notices — Intelmeter fork — 2026-10-16
+
+The application and UI library are derived from Gurux software, copyright Gurux Ltd, licensed under GPL-2.0-only. Preserve LICENSE and the original file notices.
+Fork additions, including the migration's new source and UI assets, are distributed under GPL-2.0-only to the extent copyright applies. This does not replace third-party notices or confer rights in trademarks.
+
+licenses/dependency-inventory.json records resolved package versions, copyright metadata, source repositories and commits where supplied by each NuGet package. Individual license and third-party notice texts are in licenses/<package>/<version>/. The inventory includes restore/build-only and platform-specific dependencies; it is deliberately broader than a Windows binary distribution.
+
+The six Gurux components (Common, DLMS, MQTT, Net, Serial, Terminal), where present, declare GPL-2.0-only. MQTTnet, Newtonsoft.Json, WinForms.DataVisualization and modern System.IO.Ports packages declare MIT. Older .NET support package terms are retained verbatim in their license files.
+
+These notices are copied to build/publish output. They are NOT a corresponding-source bundle or a substitute for one. See RELEASE-COMPLIANCE.txt before distributing binaries. Self-contained deployments require the additional licenses, notices and redistribution terms for the exact .NET runtime included.

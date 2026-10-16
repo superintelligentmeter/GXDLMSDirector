@@ -1,0 +1,228 @@
+[
+  {
+    "id": "Gurux.Common",
+    "version": "8.4.2503.602",
+    "license": "GPL-2.0-only",
+    "copyright": "Copyright (c) 1998-2025 Gurux Ltd. All rights reserved.",
+    "repository": "https://github.com/gurux/gurux.common",
+    "commit": "86614d5a2a21ad558239242c8f0e57e82c7c7eb1",
+    "nugetSha512": "wX/99sLNxkojHuf/fS6tGyjEF04/mEHxFI0tN+MgttgMv9nX/LfCVtdC7iH1zg46+S1ho56D5CU8sDjIhEWzVA==",
+    "noticeFiles": [
+      "LICENSE.txt"
+    ]
+  },
+  {
+    "id": "Gurux.DLMS",
+    "version": "9.0.2609.2201",
+    "license": "GPL-2.0-only",
+    "copyright": "Copyright (c) 1998-2026 Gurux Ltd. All rights reserved.",
+    "repository": "https://github.com/gurux/gurux.dlms.net",
+    "commit": "6f263019caab62eb038dad7b1fa130edc7097081",
+    "nugetSha512": "j3qBGmP+/QvMMDDeRvz0IeEHYOsPSNlKn7QHC+4WJ1F7dWD/pqMLYlSow9Jnp4ylpxZ9FDVM6Lt0SSq+/GyiXA==",
+    "noticeFiles": [
+      "LICENSE.txt"
+    ]
+  },
+  {
+    "id": "Gurux.MQTT",
+    "version": "8.1.2302.902",
+    "license": "GPL-2.0-only",
+    "copyright": "Copyright (c) 1998-2023 Gurux Ltd. All rights reserved.",
+    "repository": "https://github.com/gurux/gurux.mqtt",
+    "commit": "",
+    "nugetSha512": "tL9UjotSkJX1CJH14fWCPaN1lVhu6q0oeWVp0kLNBMSIjImKLRwL10gR5Z+jCmm1yF26tsOu9IZtOHMIPBsuHg==",
+    "noticeFiles": [
+      "LICENSE.txt"
+    ]
+  },
+  {
+    "id": "Gurux.Net",
+    "version": "8.4.2302.904",
+    "license": "GPL-2.0-only",
+    "copyright": "Copyright (c) 1998-2023 Gurux Ltd. All rights reserved.",
+    "repository": "https://github.com/gurux/gurux.net",
+    "commit": "",
+    "nugetSha512": "AMRgavBzqLeRzqotnKhWtXKl0JRDAdLC6fVX1uwF14pE//TWghM49Jl4TosBpoul0kvf/UK/+9eOeu/JpMYHCw==",
+    "noticeFiles": [
+      "LICENSE.txt"
+    ]
+  },
+  {
+    "id": "Gurux.Serial",
+    "version": "8.4.2302.902",
+    "license": "GPL-2.0-only",
+    "copyright": "Copyright (c) 1998-2023 Gurux Ltd. All rights reserved.",
+    "repository": "https://github.com/gurux/Gurux.Serial",
+    "commit": "",
+    "nugetSha512": "RHcPef87HAc0AxKWaRBT6rjpCAbt+IM31kf5vilB5lurPYVDTU6XCYR90X8C0YmpDWixHRDsoMzX6hAL2JJHJw==",
+    "noticeFiles": [
+      "LICENSE.txt"
+    ]
+  },
+  {
+    "id": "Gurux.Terminal",
+    "version": "8.4.2302.902",
+    "license": "GPL-2.0-only",
+    "copyright": "Copyright (c) 1998-2023 Gurux Ltd. All rights reserved.",
+    "repository": "https://github.com/gurux/Gurux.Terminal",
+    "commit": "",
+    "nugetSha512": "cjVjAX6UwG0xAwAFZ6nyK9jfnecKRFLeHDxZVvDzT425QvSvQmSJCbYrMQy8+bvKshWR2pgHNMC8eme0JGBtCw==",
+    "noticeFiles": [
+      "LICENSE.txt"
+    ]
+  },
+  {
+    "id": "Microsoft.NETCore.Platforms",
+    "version": "1.1.0",
+    "license": "",
+    "copyright": "© Microsoft Corporation.  All rights reserved.",
+    "repository": "",
+    "commit": "",
+    "nugetSha512": "kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A==",
+    "noticeFiles": [
+      "dotnet_library_license.txt",
+      "ThirdPartyNotices.txt"
+    ]
+  },
+  {
+    "id": "MQTTnet",
+    "version": "4.1.4.563",
+    "license": "MIT",
+    "copyright": "Copyright (c) .NET Foundation and Contributors",
+    "repository": "https://github.com/dotnet/MQTTnet.git",
+    "commit": "f79649d71b6544952986bac7f645482617a613ba",
+    "nugetSha512": "gO9segUcKyQJcjV7w7OOdoAIkec7cUN65vEhYutbdWcj4rbtz/oL/RDvQVVbameXc6ChkjKx7/HbO+R8ejAUZQ==",
+    "noticeFiles": [
+      "LICENSE.txt"
+    ]
+  },
+  {
+    "id": "NETStandard.Library",
+    "version": "2.0.3",
+    "license": "",
+    "copyright": ".NET Foundation and Contributors",
+    "repository": "",
+    "commit": "",
+    "nugetSha512": "st47PosZSHrjECdjeIzZQbzivYBJFv6P2nv4cj2ypdI204DO+vZ7l5raGMiX4eXMJ53RfOIg+/s4DHVZ54Nu2A==",
+    "noticeFiles": [
+      "LICENSE.TXT",
+      "THIRD-PARTY-NOTICES.TXT"
+    ]
+  },
+  {
+    "id": "Newtonsoft.Json",
+    "version": "13.0.3",
+    "license": "MIT",
+    "copyright": "Copyright © James Newton-King 2008",
+    "repository": "https://github.com/JamesNK/Newtonsoft.Json",
+    "commit": "0a2e291c0d9c0c7675d445703e51750363a549ef",
+    "nugetSha512": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ==",
+    "noticeFiles": [
+      "LICENSE.md"
+    ]
+  },
+  {
+    "id": "runtime.linux-arm.runtime.native.System.IO.Ports",
+    "version": "7.0.0",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "repository": "https://github.com/dotnet/runtime",
+    "commit": "d099f075e45d2aa6007a22b71b45a08758559f80",
+    "nugetSha512": "CBvgRaF+M0xGLDv2Geb/0v0LEADheH8aK72GRAUJdnqnJVsQO60ki1XO8M3keEhnjm+T5NvLm41pNXAVYAPiSg==",
+    "noticeFiles": [
+      "LICENSE.TXT",
+      "THIRD-PARTY-NOTICES.TXT"
+    ]
+  },
+  {
+    "id": "runtime.linux-arm64.runtime.native.System.IO.Ports",
+    "version": "7.0.0",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "repository": "https://github.com/dotnet/runtime",
+    "commit": "d099f075e45d2aa6007a22b71b45a08758559f80",
+    "nugetSha512": "5VCyRCtCIYU8FR/W8oo7ouFuJ8tmAg9ddsuXhfCKZfZrbaVZSKxkmNBa6fxkfYPueD0jQfOvwFBmE5c6zalCSw==",
+    "noticeFiles": [
+      "LICENSE.TXT",
+      "THIRD-PARTY-NOTICES.TXT"
+    ]
+  },
+  {
+    "id": "runtime.linux-x64.runtime.native.System.IO.Ports",
+    "version": "7.0.0",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "repository": "https://github.com/dotnet/runtime",
+    "commit": "d099f075e45d2aa6007a22b71b45a08758559f80",
+    "nugetSha512": "DV9dWDUs23OoZqMWl5IhLr3D+b9koDiSHQxFKdYgWnQbnthv8c/yDjrlrI8nMrDc71RAKCO8jlUojzuPMX04gg==",
+    "noticeFiles": [
+      "LICENSE.TXT",
+      "THIRD-PARTY-NOTICES.TXT"
+    ]
+  },
+  {
+    "id": "runtime.native.System.IO.Ports",
+    "version": "7.0.0",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "repository": "https://github.com/dotnet/runtime",
+    "commit": "d099f075e45d2aa6007a22b71b45a08758559f80",
+    "nugetSha512": "L4Ivegqc3B0Fee7VifFy2JST9nndm+uvJ0viLIZUaImDfnr+JmRin9Tbqd56KuMtm0eVxHpNOWZBPtKrA/1h5Q==",
+    "noticeFiles": [
+      "LICENSE.TXT",
+      "THIRD-PARTY-NOTICES.TXT"
+    ]
+  },
+  {
+    "id": "runtime.osx-arm64.runtime.native.System.IO.Ports",
+    "version": "7.0.0",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "repository": "https://github.com/dotnet/runtime",
+    "commit": "d099f075e45d2aa6007a22b71b45a08758559f80",
+    "nugetSha512": "jFwh4sKSXZ7al5XrItEO4GdGWa6XNxvNx+LhEHjrSzOwawO1znwJ+Dy+VjnrkySX9Qi4bnHNLoiqOXbqMuka4g==",
+    "noticeFiles": [
+      "LICENSE.TXT",
+      "THIRD-PARTY-NOTICES.TXT"
+    ]
+  },
+  {
+    "id": "runtime.osx-x64.runtime.native.System.IO.Ports",
+    "version": "7.0.0",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "repository": "https://github.com/dotnet/runtime",
+    "commit": "d099f075e45d2aa6007a22b71b45a08758559f80",
+    "nugetSha512": "X4LrHEfke/z9+z+iuVr35NlkhdZldY8JGNMYUN+sfPK/U/6TcE+vP44I0Yv0ir1v0bqIzq3v6Qdv1c1vmp8s4g==",
+    "noticeFiles": [
+      "LICENSE.TXT",
+      "THIRD-PARTY-NOTICES.TXT"
+    ]
+  },
+  {
+    "id": "System.IO.Ports",
+    "version": "7.0.0",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "repository": "https://github.com/dotnet/runtime",
+    "commit": "d099f075e45d2aa6007a22b71b45a08758559f80",
+    "nugetSha512": "0nWQjM5IofaIGpvkifN+LLuYwBG6BHlpmphLhhOJepcW12G8qToGuNDRgBzeTVBZzp33wVsESSZ8hUOCfq+8QA==",
+    "noticeFiles": [
+      "LICENSE.TXT",
+      "THIRD-PARTY-NOTICES.TXT"
+    ]
+  },
+  {
+    "id": "WinForms.DataVisualization",
+    "version": "1.10.2",
+    "license": "MIT",
+    "copyright": "",
+    "repository": "https://github.com/kirsan31/winforms-datavisualization",
+    "commit": "063510db7fa1e7fafbb19a6b1c79a8f25112a700",
+    "nugetSha512": "zdnPgnY1nggdYhzldvwCLpSA5FI2pNsoAUtwNzCm6Dbxt6Und4a6FuZUFjoWgTlOYN0iPrlOqwaQuj54Owq9Mg==",
+    "noticeFiles": [
+      "LICENSE.TXT",
+      "THIRD-PARTY-NOTICES.TXT"
+    ]
+  }
+]
