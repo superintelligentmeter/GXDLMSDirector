@@ -1,41 +1,63 @@
-# Intelmeter fork of GXDLMSDirector
+# GXDLMSDirector — superintelligentmeter fork
 
-This is an unofficial community fork, maintained under the Intelmeter GitHub account. It is not an official Gurux release and does not imply Gurux endorsement. Original Gurux attribution is retained below.
+An unofficial community fork of [Gurux GXDLMSDirector](https://github.com/Gurux/GXDLMSDirector), maintained by [superintelligentmeter](https://github.com/superintelligentmeter). It builds on the original DLMS/COSEM meter tools with an updated Windows interface. Customizable multi-meter dashboards are shown below as a development preview.
+
+This is **not an official Gurux release** and does not imply Gurux endorsement. Original GXDLMSDirector and Gurux components are developed by Gurux Ltd; their copyright, attribution and license notices remain applicable.
 
 License: **GPL-2.0-only**. The fork's contributions are distributed under the same license; original Gurux and third-party notices remain applicable. See [LICENSE](LICENSE), [MODIFICATIONS.txt](MODIFICATIONS.txt), [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt), and [RELEASE-COMPLIANCE.txt](RELEASE-COMPLIANCE.txt).
 
-Build on Windows with the .NET 10 SDK. Clone both Intelmeter repositories into sibling directories named GXDLMSDirector and Gurux.DLMS.UI.Net, then run from their parent directory:
+## Application preview
 
-    dotnet build GXDLMSDirector/Development/GXDLMSDirector46.csproj -c Release -t:Rebuild
+![GXDLMSDirector with three measurement tiles and a voltage trend for two meters](ui.png)
+
+*Development preview built from the local working version of this fork, displaying simulated readings. No physical meters are connected. The dashboard source changes have not yet been published; cloning the repositories currently builds the published application without these dashboard updates.*
+
+## Dashboard development preview
+
+- Updated Windows interface, shared control styling and DPI-aware dashboard layout.
+- An embedded **Dashboards** screen alongside **Devices** in the navigation tree.
+- OBIS measurement tiles, numeric trend charts and tables spanning multiple loaded meters.
+- Drag-and-drop ordering, corner resizing and automatically saved dashboard layouts.
+- A meter selector that uses the same loaded objects as the device tree and explains unavailable selections.
+- An optional dashboard module, enabled or disabled through **Tools > Settings > Dashboards** after restarting.
+
+The existing Gurux meter-reading and configuration tools remain part of the application. Dashboards use the existing communicator; they do not connect meters automatically.
+
+## Build on Windows
+
+Install the **.NET 10 SDK**, then clone both forks into sibling directories:
+
+```powershell
+git clone https://github.com/superintelligentmeter/GXDLMSDirector.git
+git clone https://github.com/superintelligentmeter/Gurux.DLMS.UI.Net.git
+dotnet build GXDLMSDirector/Development/GXDLMSDirector46.csproj -c Release -t:Rebuild
+```
+
+Keep the directory names `GXDLMSDirector` and `Gurux.DLMS.UI.Net`; the application references the companion UI project.
 
 The protocol library remains the official Gurux.DLMS 9.0.2609.2201 NuGet package. This GPL dependency is not exempt from redistribution obligations merely because it is unmodified.
 
----
+## Using dashboards in the development version
 
-![alt tag](ui.png)
+1. Load your meters under **Devices** and connect them with the existing application commands.
+2. Select **Dashboards** in the navigation tree, then create or open a dashboard.
+3. Choose **Add OBIS**, select a meter and its objects, then choose an attribute and display type. Measurements can come from multiple meters.
+4. Use **Read now** for a single read or **Start monitoring** for repeated reads.
+5. Drag cards to reorder them and use their lower-right corners to resize. **Done** exits layout editing; changes save automatically. If saving fails, **Not saved · Retry** remains visible.
 
+Dashboard definitions are stored separately from meter files. Save the meter file after dashboard identities are first assigned so those associations survive reopening. Readings and credentials are not included in dashboard JSON.
 
-See An [Gurux](http://www.gurux.org/ "Gurux") for an overview.
+## Related projects and original Gurux resources
 
-Join the Gurux Community or follow [@Gurux](https://twitter.com/guruxorg "@Gurux") for project updates.
+- [Companion UI fork](https://github.com/superintelligentmeter/Gurux.DLMS.UI.Net)
+- [Original GXDLMSDirector repository](https://github.com/Gurux/GXDLMSDirector)
+- [Original Gurux.DLMS.UI.Net repository](https://github.com/Gurux/Gurux.DLMS.UI.Net)
+- [Gurux website](https://www.gurux.fi/) and [GXDLMSDirector overview](https://www.gurux.fi/index.php?q=GXDLMSDirector)
+- [Gurux application help](https://www.gurux.fi/index.php?q=GXDLMSDirectorHelp), [meter settings](https://www.gurux.fi/index.php?q=GXDLMSDirectorExample), and [community forum](https://www.gurux.fi/index.php?q=GXDLMSCOSEMDirectorForum)
+- [Gurux community updates](https://twitter.com/guruxorg)
 
-With GXDLMSDirector application you to read you DLMS/COSEM compatible electricity, gas or water meters. 
-You can control your meters with easy to use user interface. 
+## Distribution and attribution
 
-Best part is that you can control your different meters with same application. 
-You do not need manufactur specific applications. 
+Keep the original Gurux copyright, GPL and third-party notices intact. Fork modifications and their notices are recorded in [MODIFICATIONS.txt](MODIFICATIONS.txt); dependency notices are in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).
 
-For more info check out [GXDLMSDirector](http://www.gurux.fi/index.php?q=GXDLMSDirector "GXDLMSDirector").
-
-We are updating documentation on Gurux web page. 
-
-Because DLMS manufacturers are using different parameters for meters we are updating [default meters settings](http://www.gurux.fi/index.php?q=GXDLMSDirectorExample).
-We'll try to make your meter reading as easy as possible.
-
-GXDLMSDirector [Help](http://www.gurux.fi/index.php?q=GXDLMSDirectorHelp "help") aids you to get started.
-
-If you have problems or ideas you can ask your questions in Gurux GXDLMSDirector [Forum](http://www.gurux.fi/index.php?q=GXDLMSCOSEMDirectorForum).
-
-If you want to build source codes you need Nuget package manager for Visual Studio.
-You can get it here:
-https://visualstudiogallery.msdn.microsoft.com/27077b70-9dad-4c64-adcf-c7cf6bc9970c
+Before distributing executables, installers or dependency DLLs, follow [RELEASE-COMPLIANCE.txt](RELEASE-COMPLIANCE.txt), including the complete corresponding-source requirements. A source repository or screenshot does not by itself satisfy every binary-release obligation.

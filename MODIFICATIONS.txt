@@ -668,3 +668,6 @@ Development/StudioIcons.cs
 Development/TreeIcons.cs
 Development/packages.config
 MIGRATION-CONTEXT.txt
+
+2026-10-24 — README and application preview
+Updated README maintainer/repository links to superintelligentmeter and current build/usage guidance. Replaced the README preview with ui.png, captured from the current application using simulated sample readings and no real meter connections. Original Gurux attribution, GPL licensing text and third-party notices are preserved; historical contributor credits are unchanged.
