@@ -14,7 +14,7 @@ using System.Windows.Forms;
 namespace GXDLMSDirector
 {
     /// <summary>Original 24-unit vector glyphs. SVG exports and toolbar bitmaps share the same geometry.</summary>
-    public static class TreeIcons
+    public static partial class TreeIcons
     {
         private sealed record Shape(string Kind, bool Accent, float[] Values);
         private static Shape P(bool accent, params float[] points) => new("polyline", accent, points);
@@ -55,8 +55,14 @@ namespace GXDLMSDirector
             value.GetDirtyAttributeIndexes().Length != 0 ? ModifiedIndex : ObjectIndex(value.ObjectType);
 
         private static readonly ConditionalWeakTable<ImageList, ImageBinding> Bindings = new();
-        public static void Apply(ImageList list, Control owner) => Bind(list, owner, new[]
-            {"devices","meter","meter","connected","disconnected","connected","disconnected","data-value","profile","modified","modified","data-group","settings","clock","association","register"});
+        static partial void RegisterFeatureGlyphs(Dictionary<string, Shape[]> glyphs);
+        static partial void AppendFeatureIcons(List<string> names);
+        static TreeIcons() { RegisterFeatureGlyphs(Glyphs); }
+        public static void Apply(ImageList list, Control owner)
+        {
+            var names = new List<string> { "devices","meter","meter","connected","disconnected","connected","disconnected","data-value","profile","modified","modified","data-group","settings","clock","association","register" };
+            AppendFeatureIcons(names); Bind(list, owner, names.ToArray());
+        }
 
         // GXConformanceTest.ErrorLevel: 0 success, 1 warning, 2 error.
         public static void ApplyStatus(ImageList list, Control owner) =>

@@ -307,6 +307,8 @@ namespace GXDLMSDirector
             TreeIcons.ApplyStatus(imageList2, ConformanceTests);
             IntegrateMenu(menuStrip1);
             FrameWorkspaceSections();
+            // Intelmeter, 2026-10-17: read-only dashboard entry points. GPL-2.0-only.
+            InitializeDashboards();
             BackColor = ShellPresentation.Chrome;
             ShellPresentation.Apply(this);
         }
@@ -638,7 +640,8 @@ namespace GXDLMSDirector
                 DeviceInfoView.Visible = obj is GXDLMSMeter;
                 tabControl2.Visible = obj is GXDLMSObject;
                 ObjectValueView.Visible = obj is GXDLMSObjectCollection;
-                if (DeviceListView.Visible)
+                // Route by model type: Visible is false when the parent Objects tab is hidden.
+                if (obj is GXDLMSMeterCollection)
                 {
                     if (activeDC == null)
                     {
@@ -652,7 +655,7 @@ namespace GXDLMSDirector
                     DeleteMnu.Enabled = DeleteBtn.Enabled = OptionsBtn.Enabled = false;
                     DeviceInfoView.BringToFront();
                 }
-                else if (DeviceInfoView.Visible)
+                else if (obj is GXDLMSMeter)
                 {
                     SaveAsTemplateBtn.Enabled = true;
                     GXDLMSMeter dev = (GXDLMSMeter)obj;
@@ -713,7 +716,7 @@ namespace GXDLMSDirector
                         }
                     }
                 }
-                else if (ObjectValueView.Visible)
+                else if (obj is GXDLMSObjectCollection)
                 {
                     ObjectValueView.BringToFront();
                     SaveAsTemplateBtn.Enabled = true;
@@ -788,7 +791,7 @@ namespace GXDLMSDirector
                         ObjectValueView.EndUpdate();
                     }
                 }
-                else
+                else if (obj is GXDLMSObject)
                 {
                     tabControl2.BringToFront();
                     SaveAsTemplateBtn.Enabled = true;
@@ -1070,6 +1073,7 @@ namespace GXDLMSDirector
 
         private void ObjectTree_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            if (TrySelectDashboardNode(e.Node)) return;
             while (SelectedListItems.Count != 0)
             {
                 GXDLMSObject it = SelectedListItems.Values[0];
@@ -1079,6 +1083,7 @@ namespace GXDLMSDirector
             SelectedListItems.Clear();
             SelectItem(e.Node.Tag);
             ObjectTree.Focus();
+            OnDashboardTreeSelection();
             try
             {
                 this.ObjectList.ItemSelectionChanged -= new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.ObjectList_ItemSelectionChanged);
@@ -1522,6 +1527,7 @@ namespace GXDLMSDirector
         /// </summary>
         private void NewMnu_Click(object sender, EventArgs e)
         {
+            if (!PrepareDashboardsForClose()) return;
             try
             {
                 //Save changes?
@@ -1545,6 +1551,7 @@ namespace GXDLMSDirector
                     TransactionWork.Cancel();
                     TransactionWork = null;
                 }
+                ClearDashboardWorkspace();
                 path = "";
                 ObjectTreeItems.Clear();
                 SelectedListItems.Clear();
@@ -1565,6 +1572,7 @@ namespace GXDLMSDirector
                 ObjectList.Groups.Clear();
                 ObjectValueView.Items.Clear();
                 TreeNode node = ObjectTree.Nodes.Add("Devices");
+                RestoreDashboardNavigation();
                 node.Tag = Devices;
                 node.SelectedImageIndex = node.ImageIndex = 0;
                 ObjectTree.SelectedNode = node;
@@ -2070,6 +2078,7 @@ namespace GXDLMSDirector
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (!PrepareDashboardsForClose()) { e.Cancel = true; return; }
             try
             {
                 events.Close();
@@ -3321,6 +3330,7 @@ namespace GXDLMSDirector
         /// <param name="e"></param>
         private void DeleteMnu_Click(object sender, EventArgs e)
         {
+            if (TryHandleDashboardDelete()) return;
             try
             {
                 if (ObjectTree.Focused)
@@ -3521,6 +3531,8 @@ namespace GXDLMSDirector
                     Error.ShowError(this, Ex);
                 }
             }
+            if (!PrepareDashboardsForClose()) return;
+            ClearDashboardWorkspace();
             int version = 1;
             if (activeDC != null)
             {
@@ -5999,6 +6011,7 @@ namespace GXDLMSDirector
                         }
                         ms.Close();
                         dev.Name = "";
+                        ResetDashboardIdentity(dev);
                         AddDevice(dev);
                     }
                 }

@@ -1,0 +1,20 @@
+<!-- Optional in-process dashboard module. GPL-2.0-only. -->
+<Project>
+  <PropertyGroup>
+    <EnableDashboards Condition="'$(EnableDashboards)' == ''">true</EnableDashboards>
+    <DashboardsEnabled Condition="'$(DashboardsEnabled)' == ''">true</DashboardsEnabled>
+    <DefineConstants Condition="'$(EnableDashboards)' == 'true'">$(DefineConstants);DASHBOARDS</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Identity metadata is retained for XML compatibility in every build. -->
+    <Compile Include="$(MSBuildThisFileDirectory)DashboardIdentity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DashboardHost.Identity.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(EnableDashboards)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)*.cs" Exclude="$(MSBuildThisFileDirectory)DashboardIdentity.cs;$(MSBuildThisFileDirectory)DashboardHost.Identity.cs;$(MSBuildThisFileDirectory)DashboardHost.Disabled.cs" />
+    <RuntimeHostConfigurationOption Include="GXDLMSDirector.Dashboards.Enabled" Value="$(DashboardsEnabled)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(EnableDashboards)' != 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)DashboardHost.Disabled.cs" />
+  </ItemGroup>
+</Project>

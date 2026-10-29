@@ -1,0 +1,101 @@
+DASHBOARDS — MULTI-METER WORKSPACE
+Intelmeter contributors, 2026-10-17. GPL-2.0-only.
+
+Usage
+1. Load/add the meters under Devices and connect the ones you want to monitor using the existing meter commands.
+2. Dashboards has its own screen inside the main application, without an Objects/Dashboards tab bar. Select Dashboards alongside Devices. Select New dashboard to create one. Right-click an OBIS object and choose Add to dashboard to preselect it.
+3. Add OBIS opens the inline picker. Choose a meter, select objects, then switch meters to select additional objects. The selection is retained across meters and searches. Choose a common readable attribute, display type (Value tiles, Trend chart or Table), and title. Add to dashboard creates a widget containing all selected measurements.
+4. Tiles, chart legends and tables identify the source meter. The monitoring strip shows connected/required meter counts. Per-measurement status and last-success times remain visible. Drag a tile or a chart/table heading to reorder it; a blue insertion line shows where it will land. Hover over a card to reveal its top-right delete control. Edit layout reveals every delete control for keyboard access. Deleting one value tile leaves the other tiles in its widget intact. More contains naming, deletion, import/export and Relink meter.
+5. Read now performs one cycle. Monitor enables repeated reads. Pause stops after each in-flight request. Refresh is 2–3600 seconds measured from the previous cycle's completion. Selecting a meter or OBIS object in the left navigation returns to its screen and pauses monitoring; enable Monitor to resume.
+6. Dashboard changes save automatically to the shared local library. Done exits layout editing. The notice strip shows Saved; Not saved · Retry stays visible after a failed write and can be activated with keyboard or mouse. Closing flushes pending edits; a save/discard confirmation is needed only when saving fails. Also save the meter file after first using dashboards: Director adds stable dashboard IDs to its meter definitions, and marks the file modified. Renaming a saved meter preserves its bindings. Newly cloned meters receive distinct IDs.
+
+Storage and migration
+The shared library is %APPDATA%/Gurux/Dashboards/workspace-v2.json. It belongs to the local user's workspace, independent of any single meter file. Each measurement stores meter ID, display name, object class, OBIS and attribute. It includes no passwords, connection settings, or captured readings. The meter ID is stored in Director's existing meter XML; no protocol-package changes are required.
+
+Legacy per-meter JSON files are discovered using the loaded meter's old identity hash (name, transport and addressing). They are copied into the workspace in memory with explicit meter IDs and migration records. Autosave persists the migration. Original files remain unchanged; saved migration records prevent duplicates on reopening. If the meter identity was changed before migration, import the old JSON explicitly after choosing the intended meter in Add OBIS. Invalid files are preserved and reported, not overwritten.
+
+Import/export uses version 2 and preserves meter IDs. Missing meters remain explicitly marked; More > Relink meter maps a saved meter's bindings in the current dashboard to a loaded meter chosen by the user. Relinking does not guess by name or OBIS and refuses duplicate measurements. Missing objects/attributes remain errors rather than being substituted. Version 1 imports require an explicit selected meter in the picker. Limits: 50 dashboards, 30 widgets per dashboard, 32 bindings per widget, 2 MB imports.
+
+Read coordination
+Gurux.DLMS remains official package 9.0.2609.2201 with its existing net48 DLL. The existing communicator performs the reads, including register scaling exactly once. Duplicate reads and scaler metadata are combined separately within each meter's cycle. Identical OBIS codes on different meters use distinct bindings and sample histories.
+
+Meters are read independently with at most four simultaneous transport workers; a disconnected meter, missing meter or timeout is isolated to its bindings. Cycle results are presented when all meter workers finish. Each meter's media lock serializes its requests, and its keep-alive state is paused/restored around its cycle. Main meter commands are disabled while a dashboard cycle is active; dashboard polling waits for existing Director transactions. Closing/replacing the meter file pauses polling and requires the current cycle to finish before retrying. These safeguards support directly connected Director meters; concentrator/plugin-mediated meters remain unsupported.
+
+Display and limits
+Value tiles, numeric trends and tables support multiple meters in one widget. Unlike units use separate chart panes. Nonnumeric values can be shown in tiles/tables. Structured previews are bounded. Trends retain at most 1,000 samples per binding for the current session; 15 min/1 h/24 h controls filter those samples, not historical meter data. Failures retain the last successful value and timestamp and insert chart gaps. Missing, disconnected, failed, stale and not-read states are distinct. Stale threshold is max(10 seconds, twice the refresh interval).
+
+Profile Generic buffer attribute 2 is not polled; use the existing ranged Profile Generic view. Dashboards do not connect meters, calculate aggregates or fetch historical data. Use the existing meter commands for connection management. Card order is persisted independently from its measurement bindings. Layout supports drag reordering and bottom-right corner resizing; Autosave persists both order and dimensions.
+
+Validation
+On Windows with .NET 10 SDK:
+  dotnet build Development/GXDLMSDirector46.csproj -c Release
+  dotnet run --project tests/DashboardTests -c Release -- <artifact-directory>
+Tests cover persistence, migration without source modification, stable-ID XML roundtrip, cross-meter picker selection, independent failure handling, identical OBIS isolation, hidden-tab meter selection, root navigation, lifecycle disposal, scaling, access checks, deduplication, cancellation, bounded samples and native rendering. Tests never open network or serial meter connections. Physical multi-meter polling and multi-monitor DPI transitions still require hardware validation.
+
+Resize tiles, charts and tables by dragging their bottom-right grip. Autosave stores completed sizes with the layout in DPI-independent units. Cards wrap without overlapping on smaller windows; saved preferred widths return when space is available.
+
+Optional feature and module boundary
+All dashboard UI, data model, storage, reading, layout, icons and host integration live in Development/Features/Dashboards. The feature is compiled into GXDLMSDirector and uses its existing communicator; there is no separate process or required dashboard service. Original MainForm contains lifecycle forwarding hooks only, plus the model-type routing fix that prevents meter/object cast errors when the object workspace is hidden. The meter class is partial so optional metadata can live in the feature folder. TreeIcons exposes optional registration hooks while retaining legacy numeric icon slots.
+
+Development/Features/Dashboards/Dashboards.targets is the single project integration point. It selects the enabled implementation or no-op host adapter.
+
+Settings toggle (restart required, no rebuild):
+Open Tools > Settings > Dashboards, change Enable dashboards, and press OK. Restart GXDLMSDirector to apply it. Cancel leaves the preference unchanged. The checkbox uses Gurux's existing IGXSettingsPage extension mechanism; no changes to the original Settings dialog are required. The saved per-user choice overrides the deployment default in either direction. The Settings page is omitted from feature-free builds.
+
+Deployment default (used until a user saves a Settings preference):
+In GXDLMSDirector.runtimeconfig.json, under runtimeOptions.configProperties, set:
+  "GXDLMSDirector.Dashboards.Enabled": false
+Set it to true to enable the feature again. Disabled startup leaves the original object workspace intact: no dashboard navigation, UI creation, timer, polling, migration, or dashboard-file access. Saved dashboard JSON is left intact. The default is enabled.
+
+Build without dashboard implementation:
+  dotnet build Development/GXDLMSDirector46.csproj -c Release -p:EnableDashboards=false -o <separate-output-directory>
+Build with the feature included but disabled by default:
+  dotnet build Development/GXDLMSDirector46.csproj -c Release -p:DashboardsEnabled=false -o <separate-output-directory>
+Use separate output directories for enabled/disabled distributions. To restore the normal build, use EnableDashboards=true and DashboardsEnabled=true. A subsequent normal build regenerates runtimeconfig.json and restores its build default.
+
+The small DashboardId XML property and clone identity hook remain in all builds to preserve meter-file compatibility and prevent duplicate IDs when an existing meter is cloned while dashboards are disabled. Existing JSON definitions and version 1/2 import compatibility are retained. The original conformance-duration screen also needs WinForms.DataVisualization, so the shared chart package remains in feature-free builds. Gurux.DLMS and ui.net require no changes for these switches.
+
+Implementation responsibilities
+- DashboardHost.Enabled.cs / DashboardHost.Disabled.cs: original app navigation, lifetime and read gate.
+- DashboardFeature.cs, DashboardSettings.cs and Dashboards.targets: Settings preference, startup/build switches.
+- DashboardModel.cs: JSON definitions, validation and atomic storage.
+- DashboardMeterCatalog.cs: per-refresh indexes referencing original meter/object instances.
+- DashboardAccessPolicy.cs: shared selection/read eligibility including scaler and profile-buffer rules.
+- DashboardReader.cs: deduplicated, bounded concurrent read orchestration with per-meter failure isolation.
+- DashboardForm.cs: form lifecycle, definitions, migration and reference lookup.
+- DashboardForm.Sampling.cs: polling, results and existing-communicator adapter.
+- DashboardForm.Visuals.cs: charts/tables; DashboardForm.Workspace.cs: screen/picker behavior; DashboardForm.Picker.cs: picker layout; DashboardForm.Layout.cs: drag, resize and delete.
+
+Review changes, 2026-10-17
+- Replaced scattered dashboard types/fields in original host code with adapter hooks.
+- Added startup and compile-time disabling; tested original Devices navigation without the feature.
+- Stopped hidden-dashboard refresh timers and skipped refresh while a read is busy.
+- Replaced repeated per-binding object scans during display/read cycles with short-lived reference indexes, rebuilt between cycles so replacements do not become stale.
+- Limited concurrent transport workers to four while keeping meter failures isolated.
+- Removed sample histories when their final binding is deleted; histories still used elsewhere remain.
+- Unified access validation between the picker and reader, including register scaler rights. Mixed object selections now require matching attribute names as well as indexes.
+- Avoided layout work when resize dimensions have not changed; preserved all existing saved size/order fields.
+- Removed stale menu separators and old per-meter heading code.
+
+Additional feature-free smoke test:
+  dotnet run --project tests/DashboardDisabledTests -c Release -p:EnableDashboards=false
+This verifies dashboard UI/reader types are absent, original Devices navigation is present, lifecycle forwarding is safe, and identity compatibility metadata remains. The enabled suite also checks the startup switch, hidden timers, indexed reference identity, bounded concurrency, shared access rules and orphan sample cleanup.
+
+Validation limits remain: tests are offline. Physical meter/concentrator integration and mixed-DPI multi-monitor transitions require on-device verification. Cancellation is cooperative between communicator calls; an in-flight transport request must return or time out. Charts remain session-only and Profile Generic buffer polling remains excluded. Runtime feature switching takes effect on the next app start.
+
+Picker layout update, 2026-10-17
+The inline picker uses a single responsive layout with a scrollable object list, columns sized to fit, compact status labels, and full availability reasons in tooltips. Meter/search controls and the attribute/display/title form have consistent spacing. The footer aligns selection count and the Add command; adding is disabled until the selection is valid. Short windows use a compact layout with a fixed footer; only the object list scrolls. Missing/Invalid descriptions fall back to the actual object class name. All entries reference the selected meter's existing objects.
+
+UI quality policy and review
+Follow AGENTS.md before making any UI change. DASHBOARD-UI-REVIEW.txt records the whole-screen review and its verification limits. In Edit layout, Done finishes editing; keyboard users can focus cards and use Ctrl+arrows to move or Ctrl+Shift+arrows to resize. Escape closes Add OBIS or exits edit mode. On smaller windows Add OBIS temporarily uses the workspace width; a compact layout keeps its footer reachable without outer scrolling. Dialogs have native ownership and Enter/Escape actions. Long names/values/errors have full-text tooltips.
+
+Reference layout update, 2026-10-17
+Applied the user's Electrical overview layout reference while retaining the existing application fonts and palette: rounded cards/picker and status badges, full-width monitoring and notice bars, value cards above wide charts, separated value-card footers, and stacked picker fields. The picker header and Add action stay visible while only the object list scrolls. On small windows the picker uses the workspace and hides monitoring/notice temporarily, restoring them when closed. Three default value cards fit the desktop card region beside the picker where space permits; explicitly saved sizes remain respected. No workspace subtitle or removed dashboard navigation shortcut was restored. Enabled Release suite: 167 assertions passed, including pointer/keyboard layouts, saved order/sizes, fixed Add/Close controls and restoration of the monitoring row.
+
+Automatic persistence
+Changes to dashboard creation/naming/deletion, imported definitions, meter relinking, widgets, order/sizes and refresh settings use the same automatic persistence path. Rapid changes are grouped for 400 ms. Resizing writes the final dimensions on release, without saving intermediate mouse movements. Autosave works while monitoring is paused or the dashboard is hidden; Done remains only the edit-mode exit. Existing JSON uses the same temporary-file replacement and excludes readings/credentials. A load failure protects the existing library from overwrite. Write failures preserve dirty in-memory changes, keep the previous file, and offer Not saved · Retry; normal meter updates cannot hide that status.
+
+Separate-process persistence regression (offline, fresh artifact directory)
+  DashboardTests.exe <artifact-directory> --restart-write
+  DashboardTests.exe <same-artifact-directory> --restart-read
+The first invocation creates and closes a temporary multi-meter workspace through the dashboard UI/close hook; the second reloads the temporary meter XML and workspace in a new OS process and checks card order, logical/rendered dimensions, OBIS attributes, stable meter associations and multiple dashboards. The phases do not change user preferences or meter/workspace files.

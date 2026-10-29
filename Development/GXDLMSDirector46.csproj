@@ -400,9 +400,6 @@
     <ProjectReference Include="..\..\Gurux.DLMS.UI.Net\development\Gurux.DLMS.UI.Net.csproj"></ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WinForms.DataVisualization" Version="1.10.2" />
-  </ItemGroup>
-  <ItemGroup>
       <Compile Include="EditorClone.cs" />
       <Compile Include="ManufacturerSettingsStore.cs" />
     <Compile Include="ModernIcons.cs" />
@@ -422,4 +419,9 @@
     <Content Include="..\RELEASE-COMPLIANCE.txt" Link="RELEASE-COMPLIANCE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="..\licenses\**\*" Link="licenses\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Shared with the original conformance-duration screen, even without dashboards. -->
+    <PackageReference Include="WinForms.DataVisualization" Version="1.10.2" />
+  </ItemGroup>
+  <Import Project="Features\Dashboards\Dashboards.targets" />
 </Project>

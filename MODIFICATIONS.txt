@@ -671,3 +671,6 @@ MIGRATION-CONTEXT.txt
 
 2026-10-24 — README and application preview
 Updated README maintainer/repository links to superintelligentmeter and current build/usage guidance. Replaced the README preview with ui.png, captured from the current application using simulated sample readings and no real meter connections. Original Gurux attribution, GPL licensing text and third-party notices are preserved; historical contributor credits are unchanged.
+
+2026-10-29 — Optional dashboard module
+Published the embedded multi-meter dashboard module, host integration, dashboard icons, autosave and persisted layouts, Settings switch, DPI/layout fixes, native manufacturer-update prompt, offline regression fixtures and repository UI quality instructions. The existing Gurux.DLMS package and original license/attribution notices remain unchanged. See DASHBOARDS.txt and DASHBOARD-UI-REVIEW.txt for behavior and verification limits.

@@ -1,0 +1,6 @@
+---
+description: Preserve established application UI and review complete affected screens before delivery.
+alwaysApply: true
+---
+
+Follow the repository's AGENTS.md, especially "UI quality is part of completion" and the preserved dashboard decisions. UI work is complete only after rendering and checking the affected screens with realistic content and supported window sizes; build/test success alone is insufficient.

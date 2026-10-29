@@ -52,7 +52,7 @@ using Gurux.DLMS.Extension;
 namespace GXDLMSDirector
 {
     [Serializable]
-    public class GXDLMSDevice : GXDLMSMeter
+    public partial class GXDLMSDevice : GXDLMSMeter
     {
         DeviceState m_Status;
 

@@ -1,6 +1,6 @@
 # GXDLMSDirector — superintelligentmeter fork
 
-An unofficial community fork of [Gurux GXDLMSDirector](https://github.com/Gurux/GXDLMSDirector), maintained by [superintelligentmeter](https://github.com/superintelligentmeter). It builds on the original DLMS/COSEM meter tools with an updated Windows interface. Customizable multi-meter dashboards are shown below as a development preview.
+An unofficial community fork of [Gurux GXDLMSDirector](https://github.com/Gurux/GXDLMSDirector), maintained by [superintelligentmeter](https://github.com/superintelligentmeter). It combines the original DLMS/COSEM meter tools with an updated Windows interface and customizable multi-meter dashboards.
 
 This is **not an official Gurux release** and does not imply Gurux endorsement. Original GXDLMSDirector and Gurux components are developed by Gurux Ltd; their copyright, attribution and license notices remain applicable.
 
@@ -10,9 +10,9 @@ License: **GPL-2.0-only**. The fork's contributions are distributed under the sa
 
 ![GXDLMSDirector with three measurement tiles and a voltage trend for two meters](ui.png)
 
-*Development preview built from the local working version of this fork, displaying simulated readings. No physical meters are connected. The dashboard source changes have not yet been published; cloning the repositories currently builds the published application without these dashboard updates.*
+*The application built from this fork, displaying a sample workspace with simulated readings. No physical meters are connected in this screenshot.*
 
-## Dashboard development preview
+## What this fork adds
 
 - Updated Windows interface, shared control styling and DPI-aware dashboard layout.
 - An embedded **Dashboards** screen alongside **Devices** in the navigation tree.
@@ -21,7 +21,7 @@ License: **GPL-2.0-only**. The fork's contributions are distributed under the sa
 - A meter selector that uses the same loaded objects as the device tree and explains unavailable selections.
 - An optional dashboard module, enabled or disabled through **Tools > Settings > Dashboards** after restarting.
 
-The existing Gurux meter-reading and configuration tools remain part of the application. Dashboards use the existing communicator; they do not connect meters automatically.
+The existing Gurux meter-reading and configuration tools remain part of the application. Dashboards use the existing communicator; they do not connect meters automatically. See [DASHBOARDS.txt](DASHBOARDS.txt) for behavior, limits, storage and feature switches.
 
 ## Build on Windows
 
@@ -37,7 +37,7 @@ Keep the directory names `GXDLMSDirector` and `Gurux.DLMS.UI.Net`; the applicati
 
 The protocol library remains the official Gurux.DLMS 9.0.2609.2201 NuGet package. This GPL dependency is not exempt from redistribution obligations merely because it is unmodified.
 
-## Using dashboards in the development version
+## Use dashboards
 
 1. Load your meters under **Devices** and connect them with the existing application commands.
 2. Select **Dashboards** in the navigation tree, then create or open a dashboard.
