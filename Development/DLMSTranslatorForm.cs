@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-29: offline UI review and dialog correctness fixes. GPL-2.0-only; existing notices retained.
 // Modified for the Intelmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 using Gurux.Common;
 using Gurux.DLMS;
@@ -53,12 +54,19 @@ namespace GXDLMSDirector
 
     public partial class DLMSTranslatorForm : Form
     {
+        readonly string storageDirectory;
         string searchText = null;
         GXCipheringSettings Ciphering;
         GXDLMSTranslator translator = new GXDLMSTranslator(TranslatorOutputType.SimpleXml);
 
         public DLMSTranslatorForm()
+            : this(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GXDLMSDirector"))
         {
+        }
+
+        internal DLMSTranslatorForm(string storageDirectory)
+        {
+            this.storageDirectory = storageDirectory;
             InitializeComponent();
             InterfaceCb.Items.Add("");
             foreach (InterfaceType it in Enum.GetValues(typeof(InterfaceType)))
@@ -109,7 +117,7 @@ namespace GXDLMSDirector
             string certificates = null, keys = null;
             try
             {
-                string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GXDLMSDirector");
+                string path = storageDirectory;
                 if (!Directory.Exists(path))
                 {
                     Directory.CreateDirectory(path);
@@ -127,7 +135,7 @@ namespace GXDLMSDirector
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(this, ex.Message);
             }
             try
             {
@@ -824,7 +832,7 @@ namespace GXDLMSDirector
                     OnAppendMessage(sb.ToString());
                     OnAppendMessage(Environment.NewLine);
                     OnAppendMessage(bb.RemainingHexString(true));
-                    MessageBox.Show(ex.Message);
+                    BeginInvoke((Action)(() => MessageBox.Show(this, ex.Message)));
                 }
                 //Count starts from 1.
                 UpdateMaxProgress(0, count - 1);
@@ -882,7 +890,7 @@ namespace GXDLMSDirector
             Properties.Settings.Default.TranslatorFollow = FollowmessagesCb.SelectedIndex;
 
             Properties.Settings.Default.Data = DataPdu.Text;
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GXDLMSDirector");
+            string path = storageDirectory;
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);

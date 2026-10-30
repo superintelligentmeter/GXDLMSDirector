@@ -1,3 +1,4 @@
+// Superintelligent Meter contributors, 2026-10-30: stable settings tab/action layout across monitors. GPL-2.0-only; original notices retained.
 //
 // --------------------------------------------------------------------------
 //  Gurux Ltd
@@ -188,6 +189,8 @@ namespace GXDLMSDirector
                 HdlcCb.Checked = HdlcWithModeECb.Checked = WrapperCb.Checked = true;
             }
             AppendSignatureCb.Checked = (manufacturer.ManucatureSettings & ManufactureSettings.SignImageWithEcdsa) != 0;
+            SettingsDialogLayout.Apply(this, tabControl1, OKBtn, CancelBtn);
+            tabPage1.AutoScroll = true;
         }
 
         private void OKBtn_Click(object sender, EventArgs e)

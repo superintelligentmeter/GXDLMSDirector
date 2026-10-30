@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-29: preserve access to compact search settings. GPL-2.0-only; existing notices retained.
 // Modified for the Intelmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 //
 // --------------------------------------------------------------------------
@@ -52,6 +53,9 @@ namespace GXDLMSDirector
         public GXHdlcAddressesResolverDlg(IGXMedia media)
         {
             InitializeComponent();
+            // Search fields keep their native sizes; scroll the page at smaller heights.
+            tabPage2.AutoScroll = true;
+            CustomSettings.AutoScroll = true;
             if (Properties.Settings.Default.HdlcAddressScanBaudRates && (media is GXSerial s))
             {
                 List<string> list = new List<string>(Properties.Settings.Default.HdlcAddressBaudRates.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries));

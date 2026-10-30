@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-29: plot untimed duration samples with numeric positions. GPL-2.0-only; existing notices retained.
 //
 // --------------------------------------------------------------------------
 //  Gurux Ltd
@@ -48,6 +49,7 @@ namespace GXDLMSDirector
             InitializeComponent();
             chart1.GetToolTipText += new System.EventHandler<System.Windows.Forms.DataVisualization.Charting.ToolTipEventArgs>(GetToolTipText);
             chart1.Series.Clear();
+            bool hasSampleIndexes = false;
             int result;
             DateTime dt;
             foreach (KeyValuePair<string, string> it in values)
@@ -66,7 +68,6 @@ namespace GXDLMSDirector
                             try
                             {
                                 dt = DateTime.Parse(tmp[0], CultureInfo.InvariantCulture);
-                                //                            s.Points.AddY(result);
                                 s.Points.AddXY(dt, result);
                             }
                             catch (Exception)
@@ -80,7 +81,8 @@ namespace GXDLMSDirector
                         s.XValueType = ChartValueType.Auto;
                         if (int.TryParse(l, out result))
                         {
-                            s.Points.AddY(result);
+                            s.Points.AddXY(s.Points.Count + 1, result);
+                            hasSampleIndexes = true;
                         }
                     }
                 }
@@ -89,7 +91,7 @@ namespace GXDLMSDirector
                     chart1.Series.Add(s);
                 }
             }
-            chart1.ChartAreas[0].AxisX.LabelStyle.Format = "hh:mm:ss";
+            chart1.ChartAreas[0].AxisX.LabelStyle.Format = hasSampleIndexes ? string.Empty : "HH:mm:ss";
             chart1.ChartAreas[0].AxisX.ScaleView.Zoomable = true;
             chart1.ChartAreas[0].AxisY.ScaleView.Zoomable = true;
             chart1.MouseWheel += chart1_MouseWheel;
@@ -103,8 +105,10 @@ namespace GXDLMSDirector
             {
                 int i = e.HitTestResult.PointIndex;
                 DataPoint dp = e.HitTestResult.Series.Points[i];
-                DateTime dt = DateTime.FromOADate(dp.XValue);
-                e.Text = dt.ToShortDateString() + " " + dt.ToLongTimeString() + ": " + dp.YValues[0] + " ms.";
+                string sample = e.HitTestResult.Series.XValueType == ChartValueType.DateTime
+                    ? DateTime.FromOADate(dp.XValue).ToString("G")
+                    : "Sample " + dp.XValue.ToString(CultureInfo.CurrentCulture);
+                e.Text = sample + ": " + dp.YValues[0] + " ms.";
             }
         }
 

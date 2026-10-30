@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-29: offline UI review and dialog correctness fixes. GPL-2.0-only; existing notices retained.
 // Modified for the Intelmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 //
 // --------------------------------------------------------------------------
@@ -90,7 +91,7 @@ namespace GXDLMSDirector
             GXObisCode code = ObisCodeCollection.FindByLN(Target.ObjectType, Target.LogicalName, null);
             if (code != null && code.Attributes != null)
             {
-                Target.Attributes.AddRange(code.Attributes);
+                Target.Attributes.AddRange(EditorClone.Copy(code).Attributes);
                 Target.Description = code.Description;
             }
             else
@@ -98,7 +99,7 @@ namespace GXDLMSDirector
                 Target.Description = converter.GetDescription(Target.LogicalName, Target.ObjectType)[0];
             }
             ObisPropertyGrid.SelectedObject = Target;
-            InterfaceCB.SelectedItem = Target;
+            InterfaceCB.SelectedItem = Target.ObjectType;
         }
 
         /// <summary>
@@ -119,17 +120,10 @@ namespace GXDLMSDirector
             try
             {
                 GXDLMSObject.ValidateLogicalName(Target.LogicalName);
-                OriginalTarget.Version = Target.Version;
-                OriginalTarget.Description = Target.Description;
-                OriginalTarget.ObjectType = Target.ObjectType;
-                OriginalTarget.LogicalName = Target.LogicalName.Trim();
-                OriginalTarget.Append = Target.Append;
-                OriginalTarget.Attributes.Clear();
-                OriginalTarget.Attributes.AddRange(Target.Attributes);
                 //If user is adding OBIS code to the device.
                 if (objects != null)
                 {
-                    if (objects.FindByLN(OriginalTarget.ObjectType, OriginalTarget.LogicalName) != null)
+                    if (objects.FindByLN(Target.ObjectType, Target.LogicalName.Trim()) != null)
                     {
                         throw new Exception("OBIS code already exists.");
                     }
@@ -137,11 +131,18 @@ namespace GXDLMSDirector
                 else
                 {
                     //If user is adding new OBIS code to the template.
-                    if (ObisCodeCollection.FindByLN(OriginalTarget.ObjectType, OriginalTarget.LogicalName, OriginalTarget) != null)
+                    if (ObisCodeCollection.FindByLN(Target.ObjectType, Target.LogicalName.Trim(), OriginalTarget) != null)
                     {
                         throw new Exception("OBIS code already exists.");
                     }
                 }
+                OriginalTarget.Version = Target.Version;
+                OriginalTarget.Description = Target.Description;
+                OriginalTarget.ObjectType = Target.ObjectType;
+                OriginalTarget.LogicalName = Target.LogicalName.Trim();
+                OriginalTarget.Append = Target.Append;
+                OriginalTarget.Attributes.Clear();
+                OriginalTarget.Attributes.AddRange(Target.Attributes);
             }
             catch (Exception Ex)
             {

@@ -1,4 +1,5 @@
-﻿//
+// Modified by Superintelligent Meter contributors, 2026-10-29: keep notification fields reachable in shorter settings windows. GPL-2.0-only; existing notices retained.
+//
 // --------------------------------------------------------------------------
 //  Gurux Ltd
 //
@@ -77,6 +78,24 @@ namespace GXDLMSDirector
         {
             _eventsTranslator = eventsTranslator;
             InitializeComponent();
+            // Media property pages are taller than the original notification viewport.
+            // Keep every field reachable when the settings window is shortened.
+            NotificationsView.AutoScroll = true;
+            NotificationsView.Layout += (_, _) =>
+            {
+                int height = 0;
+                foreach (Control control in NotificationsView.Controls)
+                {
+                    if (control.Visible && control.Dock == DockStyle.Top)
+                    {
+                        height += control.Height;
+                    }
+                }
+                if (NotificationsView.AutoScrollMinSize.Height != height)
+                {
+                    NotificationsView.AutoScrollMinSize = new System.Drawing.Size(0, height);
+                }
+            };
             CertificationServerTb.Text = Properties.Settings.Default.GeneratorAddress;
             try
             {

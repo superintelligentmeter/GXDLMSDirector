@@ -1,4 +1,5 @@
-﻿using System;
+// Modified by Superintelligent Meter contributors, 2026-10-29: offline UI review and dialog correctness fixes. GPL-2.0-only; existing notices retained.
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -30,6 +31,7 @@ namespace GXDLMSDirector.Macro
             }
             catch (Exception ex)
             {
+                DialogResult = DialogResult.None;
                 MessageBox.Show(this, ex.Message);
             }
         }

@@ -1,3 +1,5 @@
+// Superintelligent Meter contributors, 2026-10-30. Keep imported ciphering selectors reachable by scrolling. GPL-2.0-only; existing notices retained.
+// Modified by Superintelligent Meter contributors, 2026-10-29: offline UI review and dialog correctness fixes. GPL-2.0-only; existing notices retained.
 // Modified for the Intelmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 //
 // --------------------------------------------------------------------------
@@ -58,12 +60,19 @@ namespace GXDLMSDirector
     {
         GXDeviceCipheringSettings ciphering;
         Form MediaPropertiesForm = null;
+        readonly string storageDirectory;
         GXManufacturerCollection Manufacturers;
         IGXMedia SelectedMedia = null;
         public GXDLMSMeter Device = null;
         public GXDLMSMeter CopyDevice = null;
         public DevicePropertiesForm(GXManufacturerCollection manufacturers, GXDLMSMeter dev)
+            : this(manufacturers, dev, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GXDLMSDirector"))
         {
+        }
+
+        internal DevicePropertiesForm(GXManufacturerCollection manufacturers, GXDLMSMeter dev, string storageDirectory)
+        {
+            this.storageDirectory = storageDirectory;
             if (manufacturers.Count == 0)
             {
                 throw new Exception(Properties.Resources.ManufacturerSettingsMissing);
@@ -71,7 +80,7 @@ namespace GXDLMSDirector
             try
             {
                 InitializeComponent();
-                string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GXDLMSDirector");
+                string path = storageDirectory;
                 if (!Directory.Exists(path))
                 {
                     Directory.CreateDirectory(path);
@@ -161,6 +170,8 @@ namespace GXDLMSDirector
                 UpdateMediaSettings();
                 UseProtectedReleaseCb.Checked = Device.UseProtectedRelease;
                 SecurityChangeCheckCb.Checked = Device.SecurityChangeCheck;
+                // The imported ciphering page uses scrolling for its signing-key fields.
+                SettingsPanel.AutoScroll = true;
                 while (tab.Controls.Count != 0)
                 {
                     Control ctr = tab.Controls[0];
@@ -169,10 +180,31 @@ namespace GXDLMSDirector
             }
             catch (Exception Ex)
             {
-                GXDLMS.Common.Error.ShowError(null, Ex);
+                GXDLMS.Common.Error.ShowError(this, Ex);
             }
+            SettingsDialogLayout.Apply(this, DeviceTab, OKBtn, CancelBtn, InitialSettingsBtn, ShowAsHex);
+            addressFieldsRight96 = Math.Max(ClientAddTB.Right, Math.Max(ResendTb.Right, PhysicalServerAddressTB.Right)) * 96f / DeviceDpi;
+            DeviceSettingsTab.Layout += (_, _) => AlignAddressFields();
+            DpiChanged += (_, _) => BeginInvoke((Action)AlignAddressFields);
+            AlignAddressFields();
         }
 
+        private bool aligningAddressFields;
+        private float addressFieldsRight96;
+        private void AlignAddressFields()
+        {
+            if (aligningAddressFields || IsDisposed) return;
+            aligningAddressFields = true;
+            try
+            {
+                int gap = Math.Max(4, (int)Math.Round(6 * DeviceDpi / 96d));
+                int left = Math.Max(ClientAddLbl.Right, Math.Max(ResendLbl.Right, PhysicalServerAddressLbl.Right)) + gap;
+                int right = (int)Math.Round(addressFieldsRight96 * DeviceDpi / 96d);
+                foreach (var editor in new[] { ClientAddTB, ResendTb, PhysicalServerAddressTB })
+                    editor.SetBounds(left, editor.Top, Math.Max(60, right - left), editor.Height);
+            }
+            finally { aligningAddressFields = false; }
+        }
         private void UpdateMediaSettings()
         {
             this.MediasCB.Items.Clear();
@@ -1922,7 +1954,7 @@ namespace GXDLMSDirector
         {
             try
             {
-                string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GXDLMSDirector");
+                string path = storageDirectory;
                 if (!Directory.Exists(path))
                 {
                     Directory.CreateDirectory(path);

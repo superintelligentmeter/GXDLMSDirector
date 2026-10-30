@@ -1,3 +1,4 @@
+// Superintelligent Meter contributors, 2026-10-30. Center native editors using their actual DPI-adjusted height. GPL-2.0-only.
 // Intelmeter contributors, 2026-10-17. Rounded frames around native editors. GPL-2.0-only.
 using System;
 using System.Drawing;
@@ -39,7 +40,10 @@ namespace GXDLMSDirector
             base.OnLayout(e); if (Editor == null) return;
             int inset = Math.Max(5, (int)Math.Round(8 * DeviceDpi / 96.0));
             int h = Editor.PreferredSize.Height;
-            Editor.SetBounds(inset, Math.Max(2, (ClientSize.Height - h) / 2), Math.Max(1, ClientSize.Width - inset * 2), h);
+            // Native combo boxes can coerce the requested height after a monitor move.
+            // Position the actual native rectangle rather than the preferred request.
+            Editor.SetBounds(inset, Editor.Top, Math.Max(1, ClientSize.Width - inset * 2), h);
+            Editor.Top = Math.Max(2, (ClientSize.Height - Editor.Height) / 2);
             ClipCombo();
         }
         protected override void OnDpiChangedAfterParent(EventArgs e) { base.OnDpiChangedAfterParent(e); PerformLayout(); Invalidate(); }

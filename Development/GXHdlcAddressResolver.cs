@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-29: allow isolated offline screen review. GPL-2.0-only; existing notices retained.
 // Modified for the Intelmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 //
 // --------------------------------------------------------------------------
@@ -61,6 +62,11 @@ namespace GXDLMSDirector
         GXManufacturerCollection Manufacturers;
 
         public GXHdlcAddressResolver()
+            : this(null)
+        {
+        }
+
+        internal GXHdlcAddressResolver(GXManufacturerCollection manufacturers)
         {
             InitializeComponent();
             try
@@ -101,8 +107,11 @@ namespace GXDLMSDirector
                 {
                     ScanBaudRateMnu_Click(null, null);
                 }
-                Manufacturers = new GXManufacturerCollection();
-                GXManufacturerCollection.ReadManufacturerSettings(Manufacturers);
+                Manufacturers = manufacturers ?? new GXManufacturerCollection();
+                if (manufacturers == null)
+                {
+                    GXManufacturerCollection.ReadManufacturerSettings(Manufacturers);
+                }
             }
             catch (Exception ex)
             {

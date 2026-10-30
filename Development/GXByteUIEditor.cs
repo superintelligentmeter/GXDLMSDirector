@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-29: preserve modal editor ownership and dispose the dialog. GPL-2.0-only; existing notices retained.
 //
 // --------------------------------------------------------------------------
 //  Gurux Ltd
@@ -34,6 +35,7 @@
 using System;
 using System.Drawing.Design;
 using System.Windows.Forms;
+using System.Windows.Forms.Design;
 
 namespace GXDLMSDirector
 {
@@ -64,10 +66,14 @@ namespace GXDLMSDirector
             {
                 return base.EditValue(context, provider, value);
             }
-            GXByteEditor dlg = new GXByteEditor((byte[])value);
-            if (dlg.ShowDialog() == DialogResult.OK)
+            using (GXByteEditor dlg = new GXByteEditor((byte[])value))
             {
-                value = dlg.Value;
+                var editorService = provider.GetService(typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
+                DialogResult result = editorService != null ? editorService.ShowDialog(dlg) : dlg.ShowDialog(Form.ActiveForm);
+                if (result == DialogResult.OK)
+                {
+                    value = dlg.Value;
+                }
             }
             return value;
         }

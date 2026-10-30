@@ -33,6 +33,7 @@ internal static partial class Program
                 ReviewDashboardRestart(directory, args[1] == "--restart-write");
                 Console.WriteLine("PASS: " + assertions + " restart-phase assertions; " + args[1]); return 0;
             }
+            if (args.Length > 1 && args[1] == "--combo-only") { ReviewDashboardCombos(directory); Console.WriteLine("PASS: " + assertions + " dashboard combo assertions"); return 0; }
             if (args.Length > 1 && args[1] == "--ui-only") { ReviewDashboardScreens(directory); Console.WriteLine("PASS: dashboard UI screen review"); return 0; }
             Check(DashboardForm.KeepMenuOnScreen(new Rectangle(1850, 300, 240, 220), new Rectangle(0, 0, 1920, 1040)) == new Point(1680, 300), "More menu stays within right edge of owner monitor");
             Check(DashboardForm.KeepMenuOnScreen(new Rectangle(-50, 950, 240, 220), new Rectangle(-1920, 0, 1920, 1040)) == new Point(-240, 820), "More menu handles negative monitor coordinates and bottom edge");

@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-29: preserve spacing above manufacturer actions while resizing. GPL-2.0-only; existing notices retained.
 // Modified for the Intelmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 //
 // --------------------------------------------------------------------------
@@ -49,6 +50,9 @@ namespace GXDLMSDirector
         public ManufacturersForm(GXManufacturerCollection manufacturers, string selectedManufacturer)
         {
             InitializeComponent();
+            SupportedInterfacesTb.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            SupportedInterfacesTb.ScrollBars = ScrollBars.Vertical;
+            NameTB.Anchor = ManufacturerIdTB.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             NameCH.Width = -2;
             UpdateValues();
             NameTB.Enabled = ManufacturerIdTB.Enabled = UseLNCB.Enabled = false;
