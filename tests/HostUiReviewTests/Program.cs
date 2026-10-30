@@ -86,15 +86,25 @@ internal static partial class Program
 
     static void Review(string name, Func<Form> factory)
     {
-        if (!string.IsNullOrEmpty(filter) && !name.Contains(filter, StringComparison.OrdinalIgnoreCase)) return;
+        if (!string.IsNullOrEmpty(filter) && !filter.Split('|').Any(part => name.Contains(part, StringComparison.OrdinalIgnoreCase))) return;
         Console.WriteLine("REVIEW " + name);
         using Form form = factory();
-        if (comboReview && !modalComboReview) ApplicationTypography.Apply(form);
+        bool modeless = new[] { "Translator", "HdlcResolver", "SerialMonitor", "PlcDiscover", "MacroEditor", "SnapshotValues", "Durations" }.Contains(name);
+        // Workspace tools are modeless in MainForm. Rendering them with ShowDialog
+        // invokes close handlers after Dispose and can reach production preference saves.
+        // Detach those handlers in this fixture only; never call Close or Apply settings.
+        if (modeless)
+        {
+            foreach (var method in form.GetType().GetMethods(All).Where(m => m.GetParameters() is var p && p.Length == 2 &&
+                p[0].ParameterType == typeof(object) && p[1].ParameterType == typeof(FormClosingEventArgs)))
+                form.FormClosing -= (FormClosingEventHandler)Delegate.CreateDelegate(typeof(FormClosingEventHandler), form, method);
+        }
+        if (comboReview && (!modalComboReview || modeless)) ApplicationTypography.Apply(form);
         form.StartPosition = FormStartPosition.Manual;
         form.Location = new Point(12, 12);
         form.ShowInTaskbar = false;
         form.AutoValidate = AutoValidate.Disable;
-        if (comboReview && modalComboReview) { ReviewModalCombos(form, name); return; }
+        if (comboReview && modalComboReview && !modeless) { ReviewModalCombos(form, name); return; }
         form.Show(); Application.DoEvents();
         if (comboReview) { ReviewComboStates(form, name); return; }
         Capture(form, name, "default");
@@ -272,15 +282,17 @@ internal static partial class Program
     {
         output = Path.GetFullPath(args.Length == 0 ? Path.Combine(Path.GetTempPath(), "gurux-host-ui-review") : args[0]);
         Directory.CreateDirectory(output);
+        Application.SetUnhandledExceptionMode(UnhandledExceptionMode.ThrowException);
         Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
         Application.SetDefaultFont(new Font("Microsoft Sans Serif", 8.25f));
         Application.EnableVisualStyles(); Application.SetCompatibleTextRenderingDefault(false); ApplicationTypography.Install();
         string fixture = Path.Combine(output, "fixture-data"); Directory.CreateDirectory(fixture);
         UseFixtureSettings();
-        comboReview = args.Contains("--combos");
+        inputReview = args.Contains("--inputs");
+        comboReview = inputReview || args.Contains("--combos");
         modalComboReview = args.Contains("--modal");
         reverseComboReview = args.Contains("--reverse");
-        filter = args.Skip(1).FirstOrDefault(a => a != "--combos" && a != "--modal" && a != "--reverse");
+        filter = args.Skip(1).FirstOrDefault(a => a != "--combos" && a != "--modal" && a != "--reverse" && a != "--inputs");
         var all = App.GetTypes().Where(t => !t.IsAbstract && (typeof(Form).IsAssignableFrom(t) || typeof(UserControl).IsAssignableFrom(t))).Select(t => new { t.FullName, constructors = t.GetConstructors(All).Select(c => string.Join(", ", c.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name))).ToArray() });
         File.WriteAllText(Path.Combine(output, "compiled-screen-inventory.json"), JsonSerializer.Serialize(all, new JsonSerializerOptions { WriteIndented = true }));
         if (!comboReview) { Validate(); ValidateSupportingDialogs(); }

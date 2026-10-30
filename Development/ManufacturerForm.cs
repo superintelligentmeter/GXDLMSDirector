@@ -1,4 +1,4 @@
-// Superintelligent Meter contributors, 2026-10-30: stable settings tab/action layout across monitors. GPL-2.0-only; original notices retained.
+// Superintelligent Meter contributors, 2026-10-30: stable settings layout and aligned bounded property rows. GPL-2.0-only; original notices retained.
 //
 // --------------------------------------------------------------------------
 //  Gurux Ltd
@@ -191,6 +191,32 @@ namespace GXDLMSDirector
             AppendSignatureCb.Checked = (manufacturer.ManucatureSettings & ManufactureSettings.SignImageWithEcdsa) != 0;
             SettingsDialogLayout.Apply(this, tabControl1, OKBtn, CancelBtn);
             tabPage1.AutoScroll = true;
+            ArrangePropertyFields();
+        }
+
+        // Ordinary properties share one field rail; compact address values stay grouped.
+        private void ArrangePropertyFields()
+        {
+            var general = DirectorPropertyRows.Create(tabPage1, "ManufacturerGeneralFields");
+            DirectorPropertyRows.Row(general, label1, DirectorPropertyRows.Compact(ManufacturerIdTB));
+            DirectorPropertyRows.Row(general, NameLbl, NameTB);
+            DirectorPropertyRows.Row(general, WebAddressLbl, WebAddressTB);
+            DirectorPropertyRows.Row(general, StandardLbl, StandardCb);
+            DirectorPropertyRows.Span(general, UseLNCB);
+            DirectorPropertyRows.Span(general, UseUtcTimeZone);
+            DirectorPropertyRows.Row(general, IecAddressLbl, IecAddressTb);
+
+            // Existing authentication/client/server subgroups intentionally retain their
+            // compact numeric pairs and formula layout inside this bounded section.
+            Gurux.DLMS.UI.EditorLayoutPolicy.ConstrainSection(AddressingGB);
+            DirectorPropertyRows.Span(general, AddressingGB);
+
+            tabPage3.AutoScroll = true;
+            var security = DirectorPropertyRows.Create(tabPage3, "ManufacturerSecurityFields");
+            DirectorPropertyRows.Row(security, SecurityLbl, SecurityCB);
+            DirectorPropertyRows.Row(security, SystemtitleLbl, DirectorPropertyRows.WithAccessory(SystemTitleTB, SystemTitleAsciiCb));
+            DirectorPropertyRows.Row(security, BlockCipherKeyLbl, DirectorPropertyRows.WithAccessory(BlockCipherKeyTB, BlockCipherKeyAsciiCb));
+            DirectorPropertyRows.Row(security, AuthenticationKeyLbl, DirectorPropertyRows.WithAccessory(AuthenticationKeyTB, AuthenticationKeyAsciiCb));
         }
 
         private void OKBtn_Click(object sender, EventArgs e)

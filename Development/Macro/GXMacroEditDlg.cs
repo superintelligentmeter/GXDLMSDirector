@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-30: align and bound native property inputs. GPL-2.0-only; existing notices retained.
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,6 +16,7 @@ namespace GXDLMSDirector.Macro
         public GXMacroEditDlg(GXMacro macro)
         {
             InitializeComponent();
+            DirectorPropertyRows.AlignNativeRows(this, (NameLbl, NameTb), (DescriptionLbl, DescriptionTb));
             _macro = macro;
             NameTb.Text = macro.Name;
             DescriptionTb.Text = macro.Description;

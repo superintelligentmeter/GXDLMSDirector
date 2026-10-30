@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-30: align the bounded object selector with the data editor. GPL-2.0-only; original notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-29: offline UI review and dialog correctness fixes. GPL-2.0-only; existing notices retained.
 // Modified for the Intelmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 //
@@ -56,6 +57,17 @@ namespace GXDLMSDirector
         public OBISCodeForm(GXDLMSConverter c, GXDLMSObjectCollection objs, GXObisCodeCollection collection, GXObisCode item)
         {
             InitializeComponent();
+            // The native property grid keeps all available data width. Its type selector
+            // uses the same left edge and a bounded, DPI-aware ordinary field width.
+            void AlignInterface()
+            {
+                InterfaceCB.Left = ObisPropertyGrid.Left;
+                InterfaceCB.Width = Math.Min(ObisPropertyGrid.Width,
+                    (int)Math.Round(Gurux.DLMS.UI.EditorLayoutPolicy.FieldWidth * DeviceDpi / 96d));
+            }
+            Layout += (_, _) => AlignInterface();
+            DpiChanged += (_, _) => AlignInterface();
+            AlignInterface();
             converter = c;
             objects = objs;
             if (c == null)

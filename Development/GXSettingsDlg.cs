@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-30: align bounded notification input rows. GPL-2.0-only; original notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-29: keep notification fields reachable in shorter settings windows. GPL-2.0-only; existing notices retained.
 //
 // --------------------------------------------------------------------------
@@ -96,6 +97,14 @@ namespace GXDLMSDirector
                     NotificationsView.AutoScrollMinSize = new System.Drawing.Size(0, height);
                 }
             };
+            panel3.AutoSize = true;
+            panel3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            var fields = DirectorPropertyRows.Create(panel3, "NotificationFields");
+            DirectorPropertyRows.Row(fields, SystemTitleLbl, DirectorPropertyRows.WithAccessory(SystemTitleTB, SystemTitleAsciiCb));
+            DirectorPropertyRows.Row(fields, BlockCipherKeyLbl, DirectorPropertyRows.WithAccessory(BlockCipherKeyTB, BlockCipherKeyAsciiCb));
+            DirectorPropertyRows.Row(fields, AuthenticationKeyLbl, DirectorPropertyRows.WithAccessory(AuthenticationKeyTB, AuthenticationKeyAsciiCb));
+            DirectorPropertyRows.Row(fields, CertificationServerLbl, CertificationServerTb);
+            Gurux.DLMS.UI.EditorLayoutPolicy.ConstrainSection(NotificationsView);
             CertificationServerTb.Text = Properties.Settings.Default.GeneratorAddress;
             try
             {

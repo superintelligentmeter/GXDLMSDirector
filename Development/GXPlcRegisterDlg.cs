@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-30: align and bound native property inputs. GPL-2.0-only; existing notices retained.
 ﻿//
 // --------------------------------------------------------------------------
 //  Gurux Ltd
@@ -50,6 +51,7 @@ namespace GXDLMSDirector
         public GXPlcRegisterDlg(byte[] activeInitiatorSystemTitle, byte[] newSystemTitle)
         {
             InitializeComponent();
+            DirectorPropertyRows.AlignNativeRows(this, (ActiveInitiatorLbl, ActiveInitiatorTb), (SystemTitleLbl, SystemTitleTb), (MACAddressLbl, MACAddressTb));
             ActiveInitiatorTb.Text = GXDLMSTranslator.ToHex(activeInitiatorSystemTitle);
             SystemTitleTb.Text = GXDLMSTranslator.ToHex(newSystemTitle);
         }

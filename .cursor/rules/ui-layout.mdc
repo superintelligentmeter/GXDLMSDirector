@@ -1,0 +1,14 @@
+---
+description: Consistent native property editor widths and alignment
+alwaysApply: true
+---
+
+When changing UI in this repository, follow `docs/UI_LAYOUT.md`.
+
+- Preserve fonts, colors, bindings, native control behavior and the existing Gurux.DLMS package.
+- Standard property sections use EditorLayoutPolicy: 800 logical pixels maximum, 144-pixel label rail (minimum 100), 640-pixel field/action-group maximum.
+- Align peer input edges. Wrap and measure captions. Use current-DPI constants, never cumulative font/size scaling.
+- Keep tables, charts, lists and structured/multiline data flexible. Document compact compound and external-provider exceptions.
+- Example: PPP Setup and MAC Address Setup use the same bounded scalar rows; a profile data table may expand across the window.
+- Render every affected screen at normal/narrow/restored sizes with empty and populated content. Inspect screenshots and record actual monitor coverage.
+- Preserve the dashboard's existing independent layout and autosave decisions.

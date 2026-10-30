@@ -1,0 +1,349 @@
+{
+  "status": "all 21 host forms rendered; dashboard confirmation complete; actual 96 DPI monitor unavailable during this run",
+  "policy": {
+    "sectionLogical": 800,
+    "ordinaryFieldLogical": 640,
+    "labelLogical": 144,
+    "compactLabelLogical": 100
+  },
+  "hostForms": [
+    {
+      "screen": "ByteEditor",
+      "role": "standard property table / multiline data",
+      "decision": "Value/Format share the shared CompactSurface field rail; multiline byte data uses available bounded editor space. Shared UI policy applies automatically.",
+      "source": "Development/GXByteEditor.cs",
+      "states": 9,
+      "evidenceFolder": "host-verified",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "MacroDelay",
+      "role": "bounded native property rows",
+      "decision": "CHANGE: scalar fields share current-DPI label rail and640logical maximum width; multiline descriptions keep available data width. Native vertical layout retained.",
+      "source": "Development/Macro/GXMacroDelayDlg.Designer.cs",
+      "states": 9,
+      "evidenceFolder": "host-verified",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "MacroCount",
+      "role": "compact numeric dialog",
+      "decision": "Single invoke-count field; no peer alignment ambiguity or unlimited stretch.",
+      "source": "Development/Macro/GXMacroCountDlg.Designer.cs",
+      "states": 9,
+      "evidenceFolder": "host-verified",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "MacroEdit",
+      "role": "bounded native property rows",
+      "decision": "CHANGE: scalar fields share current-DPI label rail and640logical maximum width; multiline descriptions keep available data width. Native vertical layout retained.",
+      "source": "Development/Macro/GXMacroEditDlg.Designer.cs",
+      "states": 9,
+      "evidenceFolder": "host-verified",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "ExternalMedia",
+      "role": "long file/URL input",
+      "decision": "File/HTTP location uses available width; Browse aligned right. Long path data exception.",
+      "source": "Development/GXExternalMediaForm.Designer.cs",
+      "states": 9,
+      "evidenceFolder": "host-verified",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "PlcRegister",
+      "role": "bounded native property rows",
+      "decision": "CHANGE: scalar fields share current-DPI label rail and640logical maximum width; multiline descriptions keep available data width. Native vertical layout retained.",
+      "source": "Development/GXPlcRegisterDlg.Designer.cs",
+      "states": 9,
+      "evidenceFolder": "host-verified",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "Conformance",
+      "role": "native property grid",
+      "decision": "PropertyGrid owns internal label/value rail and help; grouped data-editor exception.",
+      "source": "Development/ConformanceTests/GXConformanceDlg.Designer.cs",
+      "states": 5,
+      "evidenceFolder": "host-verified",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "Manufacturer",
+      "role": "standard property sections + compact address groups",
+      "decision": "CHANGE: General Name/Web/Standard/IEC share field rail; secured key rows share field rail and ASCII accessory edges. Existing grouped numeric addresses/formula/size preserved; Info remains multiline data; interface/custom settings are checkboxes.",
+      "source": "Development/ManufacturerForm.cs",
+      "states": 36,
+      "evidenceFolder": "delivery-final",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "Manufacturers",
+      "role": "master/detail list",
+      "decision": "Manufacturer list/Supported Interfaces use available data width. Read-only name uses full detail width, three-character ID stays compact.",
+      "source": "Development/ManufacturersForm.Designer.cs",
+      "states": 9,
+      "evidenceFolder": "delivery-final",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "ObisCode",
+      "role": "native property grid + bounded selector",
+      "decision": "CHANGE: object type selector uses grid left edge and scales to available width up to640logical. Property grid retains full data width.",
+      "source": "Development/OBISCodeForm.cs",
+      "states": 9,
+      "evidenceFolder": "host-verified",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "ObisCodes",
+      "role": "master/detail lists",
+      "decision": "Two object/manufacturer lists use available data width; no scalar editable field.",
+      "source": "Development/OBISCodesForm.Designer.cs",
+      "states": 9,
+      "evidenceFolder": "host-verified",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "DeviceProperties",
+      "role": "fixed multi-column property dialog",
+      "decision": "Fixed bound dialog: full-span Name/Manufacturer, compact paired address/retry values and selectors, standardized shared Ciphering table; advanced/frame/delay/gateway groups preserve semantic numeric pairs. Imported media preserves vendor internal layout.",
+      "source": "Development/DevicePropertiesForm.cs",
+      "states": 53,
+      "evidenceFolder": "host-verified",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "Translator",
+      "role": "text/data workspace + settings",
+      "decision": "Hex/XML/PDU/message editors and transcript use full available width. Toolbar interface/show/follow controls are inline tool selectors; shared Ciphering section uses policy.",
+      "source": "Development/DLMSTranslatorForm.cs",
+      "states": 27,
+      "evidenceFolder": "host-tools",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "Settings",
+      "role": "standard notification + imported media settings",
+      "decision": "CHANGE: notification keys common field edges and ASCII alignment; certification URL uses same field group. Imported media host bounded800logical while preserving external vendor panel internals. External media list is data-width exception; Dashboard page has checkbox/help only.",
+      "source": "Development/GXSettingsDlg.cs",
+      "states": 24,
+      "evidenceFolder": "delivery-final",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "HdlcResolver",
+      "role": "trace/results workspace",
+      "decision": "Progress and trace views are data-width exceptions; no scalar input.",
+      "source": "Development/GXHdlcAddressResolver.Designer.cs",
+      "states": 17,
+      "evidenceFolder": "host-tools",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "HdlcResolverSettings",
+      "role": "imported media + grouped search settings",
+      "decision": "CHANGE: imported media host bounded800logical, vendor panel internals retained. Search timings compact inline pairs; server/client address multiline lists share edges with Generate All actions; baudrate checklist remains data view.",
+      "source": "Development/GXHdlcAddressesResolverDlg.cs",
+      "states": 19,
+      "evidenceFolder": "delivery-final",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "SerialMonitor",
+      "role": "inline toolbar + log",
+      "decision": "Port selector is compact toolbar control; large log uses full available width.",
+      "source": "Development/GXSerialMonitor.Designer.cs",
+      "states": 7,
+      "evidenceFolder": "host-tools",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "PlcDiscover",
+      "role": "results/trace workspace",
+      "decision": "Available meters table and trace use full data width; no scalar editor.",
+      "source": "Development/GXPlcDiscover.Designer.cs",
+      "states": 17,
+      "evidenceFolder": "host-tools",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "MacroEditor",
+      "role": "master/detail action workspace",
+      "decision": "Action list, visualized object editor and raw data retain workspace width; object forms receive shared policy.",
+      "source": "Development/Macro/GXMacroEditor.cs",
+      "states": 17,
+      "evidenceFolder": "host-tools",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "SnapshotValues",
+      "role": "master/detail embedded object form",
+      "decision": "Selected object uses UI library property view policy; snapshot list retains data width.",
+      "source": "Development/GXValuesDlg.cs",
+      "states": 7,
+      "evidenceFolder": "host-tools",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    },
+    {
+      "screen": "Durations",
+      "role": "chart workspace",
+      "decision": "Chart/legend use full data width; no scalar editor.",
+      "source": "Development/GXDurations.cs",
+      "states": 7,
+      "evidenceFolder": "host-tools",
+      "dpi": [
+        120
+      ],
+      "status": "rendered and geometry checked"
+    }
+  ],
+  "dashboard": [
+    {
+      "surface": "Dashboard main empty/populated/disconnected/missing meter",
+      "decision": "Full-width workspace, headers, notice/monitor bars and saved resizable cards/charts/tables remain full-width content. Refresh numeric is compact inline control."
+    },
+    {
+      "surface": "Add OBIS wide pane",
+      "decision": "Meter/Search/Attribute/Display as/Title have matching rounded outer edges. Pane320logical naturally bounds ordinary editors; list consumes available data width."
+    },
+    {
+      "surface": "Add OBIS narrow/short-height mode",
+      "decision": "Full-workspace picker remains usable. Existing76logical compact label rail is explicit screen-specific exception to preserve no outer scrollbar and all actions; all peer fields aligned."
+    },
+    {
+      "surface": "Add OBIS empty/search/selected/unavailable/trend states",
+      "decision": "Same five field hosts preserved across model states; availability explanation and list are content, not separate inconsistent editor columns."
+    },
+    {
+      "surface": "Dashboard Name create/rename",
+      "decision": "Single fixed bounded name field with label above; no two-column rail needed."
+    },
+    {
+      "surface": "Dashboard Relink",
+      "decision": "Two equal-width rounded selectors with labels above; fixed bounded dialog."
+    },
+    {
+      "surface": "Dashboard Settings enabled/disabled",
+      "decision": "Checkbox/help only, no editor width defect."
+    },
+    {
+      "surface": "Dashboard save/import/export/delete prompts",
+      "decision": "Native prompt/file-picker layouts; not ordinary property forms."
+    }
+  ],
+  "externalUiCalls": [
+    {
+      "surface": "GXAboutForm",
+      "source": "Gurux.Common package",
+      "decision": "external native information dialog; no local editor controls modified"
+    },
+    {
+      "surface": "LibraryVersionsDlg",
+      "source": "external Gurux dependency",
+      "decision": "external native information/list dialog; no local editor controls modified"
+    },
+    {
+      "surface": "GXEcdsaKeysDlg and ciphering settings",
+      "source": "Gurux.DLMS.UI.Net sources",
+      "decision": "shared UI policy and fixture review owned by parent/evidence agent"
+    },
+    {
+      "surface": "IGXPropertyPage/IGXSettingsPage media extensions",
+      "source": "NuGet/plugin supplied forms",
+      "decision": "bound host property pane where appropriate; preserve vendor control ownership/layout and behavior"
+    }
+  ],
+  "confirmation": {
+    "hostScreens": 21,
+    "hostRenderedStates": 317,
+    "physicalDpi": [
+      120
+    ],
+    "dashboardFocusedAssertions": 300,
+    "dashboardRegressionAssertions": 405,
+    "dashboardFocusedStates": 20,
+    "latestSharedUiSha256": "FEF38F9CE12DF97B5D82343A2835A998CE288AA8D61EFEBCBD178F541D9A1A34",
+    "limitations": [
+      "Only DISPLAY1 at 120 DPI was attached; previous 96/120 evidence is historical and not claimed for this change.",
+      "Third-party media panels retain vendor internals inside bounded host; external package dialogs are not rewritten.",
+      "Translator and other workspace tools use modeless fixtures matching production; close handlers detached in fixture only to prevent preference writes."
+    ],
+    "deliveredManufacturerSettings": {
+      "states": 88,
+      "assertions": 320,
+      "artifactFolder": "delivery-final"
+    },
+    "remainingWorkspaceTools": {
+      "states": 142,
+      "assertions": 36,
+      "artifactFolder": "host-tools"
+    },
+    "build": "Director/host and dashboard tests compiled successfully; final test-only host rebuild had 0 errors."
+  },
+  "reviewDate": "2026-10-30",
+  "evidenceRoot": "migration/input-width-review-20261030/director (local artifacts, not tracked)",
+  "verificationScope": "Every listed form has a reviewed default screenshot and source classification. All 317 retained states have control geometry; changed forms also received full-size wide/narrow visual review. Native popup behavior and dashboard field containment were tested in the focused dashboard suite."
+}

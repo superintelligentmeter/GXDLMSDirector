@@ -48,6 +48,7 @@
     <Compile Include="ConformanceTests\Settings\GXConformanceSettings.cs" />
     <Compile Include="ConformanceTests\Settings\IGXConformanceSettings.cs" />
     <Compile Include="SettingsDialogLayout.cs" />
+    <Compile Include="DirectorPropertyRows.cs" />
     <Compile Include="GXByteConverter.cs" />
     <Compile Include="GXHdlcAddressesResolverDlg.cs">
       <SubType>Form</SubType>

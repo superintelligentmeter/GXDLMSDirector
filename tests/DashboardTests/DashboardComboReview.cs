@@ -12,9 +12,21 @@ internal static partial class Program
     private static void ReviewDashboardCombos(string folder)
     {
         var observations = new List<object>();
+        var inputWidths = new List<object>();
         void Inspect(Form window, string state)
         {
             Gurux.DLMS.UI.ApplicationTypography.Apply(window); SettleDisplay(); Capture(window, Path.Combine(folder, state + ".png"));
+            var fields = Descendants(window).OfType<DashboardFieldHost>().Where(h => h.Visible && h.Controls.Count > 0 &&
+                h.Controls[0].AccessibleName is "Meter" or "Search meter objects" or "Attribute" or "Display as" or "Widget title" or "Saved meter binding" or "Replace with loaded meter" or "Dashboard name").ToArray();
+            var edges = fields.Select(h => h.RectangleToScreen(h.ClientRectangle)).ToArray();
+            Check(edges.Select(r => r.Left).Distinct().Count() <= 1 && edges.Select(r => r.Right).Distinct().Count() <= 1,
+                state + ": peer rounded input groups share both edges");
+            Check(fields.All(h => h.Width <= Math.Ceiling(Gurux.DLMS.UI.EditorLayoutPolicy.FieldWidth * h.DeviceDpi / 96d)),
+                state + ": ordinary dashboard fields remain within the shared width limit");
+            inputWidths.Add(new { state, fields = fields.Select(h => new { input = h.Controls[0].AccessibleName, h.DeviceDpi,
+                bounds = h.Bounds.ToString(), screenBounds = h.RectangleToScreen(h.ClientRectangle).ToString(),
+                widthLogical = h.Width * 96d / h.DeviceDpi }).ToArray() });
+            File.WriteAllText(Path.Combine(folder, "input-width-review.json"), JsonSerializer.Serialize(inputWidths, new JsonSerializerOptions { WriteIndented = true }));
             var combos = Descendants(window).OfType<ComboBox>().Where(c => c.Visible).ToArray();
             foreach (var combo in combos)
             {
@@ -59,6 +71,8 @@ internal static partial class Program
             }
             using var relink = new DashboardRelinkDialog(form.Font, new[] { first.Value.Name, second.Value.Name }, new object[] { first.Value.Name, second.Value.Name });
             relink.StartPosition = FormStartPosition.Manual; relink.Location = main.Location; relink.Show(main); Inspect(relink, "relink-" + cycle + "-" + relink.DeviceDpi);
+            using var name = new DashboardNameDialog(form.Font, "Rename dashboard", "Electrical overview — long readable title");
+            name.StartPosition = FormStartPosition.Manual; name.Location = main.Location; name.Show(main); Inspect(name, "name-" + cycle + "-" + name.DeviceDpi);
             cycle++;
         }
         typeof(DashboardForm).GetField("dirty", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(form, false);

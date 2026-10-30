@@ -111,6 +111,7 @@ internal static partial class Program
         ComboResults.Add(new { screen = name, state, dpi = form.DeviceDpi, combos });
         File.WriteAllText(Path.Combine(output, "combo-review.json"), JsonSerializer.Serialize(ComboResults, new JsonSerializerOptions { WriteIndented = true }));
         AssertSettingsLayout(form, name, state);
+        if (inputReview) CaptureInputWidths(form, name, state);
     }
 
     static void CaptureComboTabs(Form form, string name, string prefix)
@@ -165,8 +166,9 @@ internal static partial class Program
 
     static void ReviewComboStates(Form form, string name)
     {
-        if (!Combos(form).Any()) { CaptureCombos(form, name, "no-combo"); return; }
+        if (!inputReview && !Combos(form).Any()) { CaptureCombos(form, name, "no-combo"); return; }
         foreach (var item in Descendants(form).OfType<ToolStrip>().SelectMany(t => t.Items.OfType<ToolStripComboBox>())) item.ComboBox.Name = item.Name;
+        if (inputReview) CaptureComboTabs(form, name, "initial");
         Size original = form.Size;
         bool resizable = form.FormBorderStyle == FormBorderStyle.Sizable || form.FormBorderStyle == FormBorderStyle.SizableToolWindow;
         int trip = 0;
@@ -176,7 +178,7 @@ internal static partial class Program
             form.WindowState = FormWindowState.Normal;
             form.Location = new Point(screen.WorkingArea.Left + 20, screen.WorkingArea.Top + 20);
             SettleCombos();
-            if (resizable) form.Size = new Size(Math.Min(Math.Max(original.Width, 900), screen.WorkingArea.Width - 40), Math.Min(Math.Max(original.Height, 700), screen.WorkingArea.Height - 40));
+            if (resizable) form.Size = new Size(Math.Min(Math.Max(original.Width, inputReview ? 1400 : 900), screen.WorkingArea.Width - 40), Math.Min(Math.Max(original.Height, 700), screen.WorkingArea.Height - 40));
             string prefix = screen.DeviceName.Replace("\\", "").Replace(".", "") + "-" + form.DeviceDpi + "-trip" + trip++;
             CaptureComboTabs(form, name, prefix + (resizable ? "-wide" : "-fixed"));
             if (form.Owner != null)
