@@ -240,3 +240,9 @@ Development/DvlErrLog.txt
 *.[mM][dD]
 ![rR][eE][aA][dD][mM][eE].[mM][dD]
 ![rR][eE][aA][dD][mM][eE].[tT][xX][tT]
+
+# Local editor settings, internal documentation, and test harnesses.
+/.cursor/
+/docs/
+/test/
+/tests/
