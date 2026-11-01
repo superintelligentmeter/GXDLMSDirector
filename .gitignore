@@ -246,3 +246,6 @@ Development/DvlErrLog.txt
 /docs/
 /test/
 /tests/
+
+# Installer tooling and generated release artifacts stay local.
+/packaging/
