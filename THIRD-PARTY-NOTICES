@@ -7,4 +7,4 @@ licenses/dependency-inventory.json records resolved package versions, copyright 
 
 The six Gurux components (Common, DLMS, MQTT, Net, Serial, Terminal), where present, declare GPL-2.0-only. MQTTnet, Newtonsoft.Json, WinForms.DataVisualization and modern System.IO.Ports packages declare MIT. Older .NET support package terms are retained verbatim in their license files.
 
-These notices are copied to build/publish output. They are NOT a corresponding-source bundle or a substitute for one. See RELEASE-COMPLIANCE.txt before distributing binaries. Self-contained deployments require the additional licenses, notices and redistribution terms for the exact .NET runtime included.
+These notices are copied to build/publish output. They are NOT a corresponding-source bundle or a substitute for one. See the distribution requirements in README.md before distributing binaries. Self-contained deployments require the additional licenses, notices and redistribution terms for the exact .NET runtime included.

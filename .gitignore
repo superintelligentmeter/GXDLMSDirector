@@ -234,3 +234,9 @@ Development/DvlErrLog.txt
 
 # Local migration conversation notes must not be published.
 /[Mm][Ii][Gg][Rr][Aa][Tt][Ii][Oo][Nn]-[Cc][Oo][Nn][Tt][Ee][Xx][Tt].[Tt][Xx][Tt]
+
+# Keep internal text/Markdown documents local; publish README files only.
+*.[tT][xX][tT]
+*.[mM][dD]
+![rR][eE][aA][dD][mM][eE].[mM][dD]
+![rR][eE][aA][dD][mM][eE].[tT][xX][tT]

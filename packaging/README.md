@@ -33,7 +33,7 @@ uninstall support and code signing require a separate installer workflow.
 The packaging script retains existing application notices and copies licenses
 from the exact .NET runtime packages selected by restore. It does not retrieve
 or certify complete corresponding source for all third-party dependencies.
-Follow RELEASE-COMPLIANCE.txt before publishing binaries: supply matching source
+Follow the distribution requirements in the root README before publishing binaries: supply matching source
 for both forks and every covered dependency, verify notices and source builds,
 and test the exact package on a clean Windows x64 machine. Preserve private
 symbols internally. Committing these build scripts does not publish binaries.

@@ -40,7 +40,7 @@ try {
         Copy-Item -LiteralPath $pdb.FullName -Destination $destination
         Remove-Item -LiteralPath $pdb.FullName
     }
-    Copy-Item LICENSE, THIRD-PARTY-NOTICES.txt, RELEASE-COMPLIANCE.txt, ASSET-PROVENANCE.txt, CREDITS.md, MODIFICATIONS.txt -Destination $publish
+    Copy-Item LICENSE, THIRD-PARTY-NOTICES, ASSET-PROVENANCE, CREDITS, MODIFICATIONS -Destination $publish
     Copy-Item packaging/README.md (Join-Path $publish 'BUILD-AND-RELEASE.md')
 
     # Locate the exact runtime packages selected by restore, including custom package caches.
@@ -71,7 +71,7 @@ try {
     }
     $manifest | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $publish 'BUILD-MANIFEST.json')
     foreach ($required in @('GXDLMSDirector.exe', 'Gurux.DLMS.dll', 'Gurux.DLMS.UI.dll',
-            'coreclr.dll', 'System.Windows.Forms.dll', 'LICENSE', 'THIRD-PARTY-NOTICES.txt', 'licenses/dependency-inventory.json')) {
+            'coreclr.dll', 'System.Windows.Forms.dll', 'LICENSE', 'THIRD-PARTY-NOTICES', 'licenses/dependency-inventory.json')) {
         if (-not (Test-Path -LiteralPath (Join-Path $publish $required))) { throw "Missing publish file: $required" }
     }
     $archive = Join-Path $output 'GXDLMSDirector-win-x64-Release.zip'

@@ -4,4 +4,4 @@ Active icon family for Director's toolbar and matching menus. Fine neutral outli
 
 Geometry: GXDLMSDirector/Development/StudioIcons.cs. Exporter: migration/IconSetThree/IconSetThree.csproj. Both use the same source. Assets include 16 SVGs and 80 transparent PNGs per theme (16, 20, 24, 32, and 48 pixels).
 
-License: GPL-2.0-only. Modified for the Intelmeter fork, 2026-10-16. See the repository LICENSE and ASSET-PROVENANCE.txt. Historical migration harness paths below/above are not included in this fork; use the included C# geometry and ExportAssets methods.
+License: GPL-2.0-only. Modified for the Intelmeter fork, 2026-10-16. See the repository LICENSE and ASSET-PROVENANCE. Historical migration harness paths below/above are not included in this fork; use the included C# geometry and ExportAssets methods.

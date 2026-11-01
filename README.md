@@ -4,7 +4,7 @@ An unofficial community fork of [Gurux GXDLMSDirector](https://github.com/Gurux/
 
 This is **not an official Gurux release** and does not imply Gurux endorsement. Original GXDLMSDirector and Gurux components are developed by Gurux Ltd; their copyright, attribution and license notices remain applicable.
 
-License: **GPL-2.0-only**. The fork's contributions are distributed under the same license; original Gurux and third-party notices remain applicable. See [LICENSE](LICENSE), [MODIFICATIONS.txt](MODIFICATIONS.txt), [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt), and [RELEASE-COMPLIANCE.txt](RELEASE-COMPLIANCE.txt).
+License: **GPL-2.0-only**. The fork's contributions are distributed under the same license; original Gurux and third-party notices remain applicable. See [LICENSE](LICENSE), [MODIFICATIONS](MODIFICATIONS), [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES).
 
 ## Application preview
 
@@ -21,7 +21,7 @@ License: **GPL-2.0-only**. The fork's contributions are distributed under the sa
 - A meter selector that uses the same loaded objects as the device tree and explains unavailable selections.
 - An optional dashboard module, enabled or disabled through **Tools > Settings > Dashboards** after restarting.
 
-The existing Gurux meter-reading and configuration tools remain part of the application. Dashboards use the existing communicator; they do not connect meters automatically. See [DASHBOARDS.txt](DASHBOARDS.txt) for behavior, limits, storage and feature switches.
+The existing Gurux meter-reading and configuration tools remain part of the application. Dashboards use the existing communicator; they do not connect meters automatically.
 
 ## Build on Windows
 
@@ -58,6 +58,6 @@ Dashboard definitions are stored separately from meter files. Save the meter fil
 
 ## Distribution and attribution
 
-Keep the original Gurux copyright, GPL and third-party notices intact. Fork modifications and their notices are recorded in [MODIFICATIONS.txt](MODIFICATIONS.txt); dependency notices are in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).
+Keep the original Gurux copyright, GPL and third-party notices intact. Fork modifications and their notices are recorded in [MODIFICATIONS](MODIFICATIONS); dependency notices are in [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES).
 
-Before distributing executables, installers or dependency DLLs, follow [RELEASE-COMPLIANCE.txt](RELEASE-COMPLIANCE.txt), including the complete corresponding-source requirements. A source repository or screenshot does not by itself satisfy every binary-release obligation.
+Before distributing executables, installers or dependency DLLs, provide complete corresponding source for the exact versions of both forks and all covered dependencies, including unchanged Gurux libraries, alongside the binary download. Preserve the build and installation scripts, license notices, and notices for any bundled runtime; verify that the source builds and that the release archive contains those notices. A source repository or screenshot does not by itself satisfy every binary-release obligation.
