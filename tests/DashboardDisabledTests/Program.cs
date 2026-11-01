@@ -1,4 +1,4 @@
-// Intelmeter contributors, 2026-10-17. Feature-free application smoke test. GPL-2.0-only.
+// superintelligentmeter contributors, 2026-10-17. Feature-free application smoke test. GPL-2.0-only.
 using System.Reflection;
 using System.Windows.Forms;
 using GXDLMSDirector;

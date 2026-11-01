@@ -1,4 +1,4 @@
-// Intelmeter contributors, 2026-10-17. Real mixed-monitor dashboard regression. GPL-2.0-only.
+// superintelligentmeter contributors, 2026-10-17. Real mixed-monitor dashboard regression. GPL-2.0-only.
 using System.Drawing;
 using System.Windows.Forms;
 using GXDLMSDirector;

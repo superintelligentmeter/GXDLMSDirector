@@ -6,4 +6,4 @@ Original vector family for GXDLMSDirector: a 24-unit grid, 1.65-unit rounded str
 
 Run `migration/Verify.ps1` from the workspace root to regenerate exports and verify the toolbar mapping. `icon-family.png` shows the complete family; `migration/results/modern-toolbar.png` shows the actual rendered toolbar, including disabled commands.
 
-License: GPL-2.0-only. Modified for the Intelmeter fork, 2026-10-16. See the repository LICENSE and ASSET-PROVENANCE. Historical migration harness paths below/above are not included in this fork; use the included C# geometry and ExportAssets methods.
+License: GPL-2.0-only. Modified for the superintelligentmeter fork, 2026-10-16. See the repository LICENSE and ASSET-PROVENANCE. Historical migration harness paths below/above are not included in this fork; use the included C# geometry and ExportAssets methods.

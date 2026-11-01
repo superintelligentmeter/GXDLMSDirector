@@ -1,4 +1,4 @@
-// Intelmeter contributors, 2026-10-17. Consistent native dashboard button rendering. GPL-2.0-only.
+// superintelligentmeter contributors, 2026-10-17. Consistent native dashboard button rendering. GPL-2.0-only.
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;

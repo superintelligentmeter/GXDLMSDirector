@@ -1,5 +1,5 @@
 // Superintelligent Meter contributors, 2026-10-30. Center native editors using their actual DPI-adjusted height. GPL-2.0-only.
-// Intelmeter contributors, 2026-10-17. Rounded frames around native editors. GPL-2.0-only.
+// superintelligentmeter contributors, 2026-10-17. Rounded frames around native editors. GPL-2.0-only.
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;

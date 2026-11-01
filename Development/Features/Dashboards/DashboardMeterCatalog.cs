@@ -1,4 +1,4 @@
-// Intelmeter contributors, 2026-10-17. Per-refresh reference indexes, never object copies. GPL-2.0-only.
+// superintelligentmeter contributors, 2026-10-17. Per-refresh reference indexes, never object copies. GPL-2.0-only.
 using System.Collections.Generic;
 using Gurux.DLMS.Objects;
 namespace GXDLMSDirector

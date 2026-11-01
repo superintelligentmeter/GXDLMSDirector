@@ -12,4 +12,4 @@ The reproducible geometry and exporter are in GXDLMSDirector/Development/SoftIco
 dotnet run --project migration/IconSetTwo/IconSetTwo.csproj -c Release -- GXDLMSDirector/Development/Assets/SoftDuoIcons
 ```
 
-License: GPL-2.0-only. Modified for the Intelmeter fork, 2026-10-16. See the repository LICENSE and ASSET-PROVENANCE. Historical migration harness paths below/above are not included in this fork; use the included C# geometry and ExportAssets methods.
+License: GPL-2.0-only. Modified for the superintelligentmeter fork, 2026-10-16. See the repository LICENSE and ASSET-PROVENANCE. Historical migration harness paths below/above are not included in this fork; use the included C# geometry and ExportAssets methods.

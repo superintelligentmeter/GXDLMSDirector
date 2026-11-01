@@ -1,4 +1,4 @@
-// Intelmeter contributors, 2026-10-17. Shared picker/read eligibility rules. GPL-2.0-only.
+// superintelligentmeter contributors, 2026-10-17. Shared picker/read eligibility rules. GPL-2.0-only.
 using System;
 using Gurux.DLMS.Objects;
 namespace GXDLMSDirector

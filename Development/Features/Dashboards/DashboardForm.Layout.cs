@@ -1,4 +1,4 @@
-// Intelmeter contributors, 2026-10-17. Card-level drag ordering and hover deletion. GPL-2.0-only.
+// superintelligentmeter contributors, 2026-10-17. Card-level drag ordering and hover deletion. GPL-2.0-only.
 using System;
 using System.Collections.Generic;
 using System.Drawing;

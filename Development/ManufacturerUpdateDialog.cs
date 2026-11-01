@@ -1,4 +1,4 @@
-// Modified for the Intelmeter fork, 2026-10-17: DPI-aware native prompt. GPL-2.0-only; original notices retained.
+// Modified for the superintelligentmeter fork, 2026-10-17: DPI-aware native prompt. GPL-2.0-only; original notices retained.
 using System;
 using System.Drawing;
 using System.Windows.Forms;

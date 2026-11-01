@@ -1,4 +1,4 @@
-// Intelmeter contributors, 2026-10-17. Dashboard module. GPL-2.0-only.
+// superintelligentmeter contributors, 2026-10-17. Dashboard module. GPL-2.0-only.
 using System;
 using System.Collections.Generic;
 using System.Drawing;

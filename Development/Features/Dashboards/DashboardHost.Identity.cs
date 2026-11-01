@@ -1,4 +1,4 @@
-// Intelmeter contributors, 2026-10-17. Identity survives feature toggling. GPL-2.0-only.
+// superintelligentmeter contributors, 2026-10-17. Identity survives feature toggling. GPL-2.0-only.
 using System;
 namespace GXDLMSDirector
 {

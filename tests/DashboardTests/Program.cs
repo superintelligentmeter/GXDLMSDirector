@@ -1,4 +1,4 @@
-// Intelmeter contributors, 2026-10-17. Offline dashboard regression tests. GPL-2.0-only.
+// superintelligentmeter contributors, 2026-10-17. Offline dashboard regression tests. GPL-2.0-only.
 using GXDLMSDirector;
 using Gurux.DLMS;
 using Gurux.DLMS.Objects;

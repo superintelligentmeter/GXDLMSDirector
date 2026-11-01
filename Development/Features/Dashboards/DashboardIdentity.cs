@@ -1,4 +1,4 @@
-// Intelmeter contributors, 2026-10-17. Optional dashboard identity compatibility. GPL-2.0-only.
+// superintelligentmeter contributors, 2026-10-17. Optional dashboard identity compatibility. GPL-2.0-only.
 using System.ComponentModel;
 namespace GXDLMSDirector
 {

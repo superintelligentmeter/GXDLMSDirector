@@ -1,4 +1,4 @@
-// Intelmeter contributors, 2026-10-18. Separate-process dashboard persistence verification. GPL-2.0-only.
+// superintelligentmeter contributors, 2026-10-18. Separate-process dashboard persistence verification. GPL-2.0-only.
 using System.Collections;
 using System.Drawing;
 using System.Reflection;

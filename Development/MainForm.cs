@@ -1,4 +1,4 @@
-// Modified for the Intelmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
+// Modified for the superintelligentmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 //
 // --------------------------------------------------------------------------
 //  Gurux Ltd
@@ -307,7 +307,7 @@ namespace GXDLMSDirector
             TreeIcons.ApplyStatus(imageList2, ConformanceTests);
             IntegrateMenu(menuStrip1);
             FrameWorkspaceSections();
-            // Intelmeter, 2026-10-17: read-only dashboard entry points. GPL-2.0-only.
+            // superintelligentmeter, 2026-10-17: read-only dashboard entry points. GPL-2.0-only.
             InitializeDashboards();
             BackColor = ShellPresentation.Chrome;
             ShellPresentation.Apply(this);

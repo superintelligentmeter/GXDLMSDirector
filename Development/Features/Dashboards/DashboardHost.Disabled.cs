@@ -1,4 +1,4 @@
-// Intelmeter contributors, 2026-10-17. No-op host adapter for feature-free builds. GPL-2.0-only.
+// superintelligentmeter contributors, 2026-10-17. No-op host adapter for feature-free builds. GPL-2.0-only.
 using System.Windows.Forms;
 namespace GXDLMSDirector
 {
