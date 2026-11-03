@@ -674,3 +674,12 @@ Updated README maintainer/repository links to superintelligentmeter and current 
 
 2026-10-29 — Optional dashboard module
 Published the embedded multi-meter dashboard module, host integration, dashboard icons, autosave and persisted layouts, Settings switch, DPI/layout fixes, native manufacturer-update prompt, offline regression fixtures and repository UI quality instructions. The existing Gurux.DLMS package and original license/attribution notices remain unchanged. Related internal dashboard behavior and verification notes are maintained locally.
+
+Community Edition 1.0.0-preview.1 — 2026-11-03
+Application versioning is independent of the Gurux.DLMS dependency version.
+Latest fork changes include dashboard storage in meter files, responsive layouts,
+DPI-aware dialogs, manufacturer settings handling and visible edited-value markers.
+Release review fixes preserve dashboards through file-switch Save/Cancel, defer
+manual meter operations until dashboard polling completes, advance chart time
+windows without new samples, and prevent clipped monitoring controls and stale
+structured-editor minimum heights. Build uses SDK 10.0.403 and runtime 10.0.14.

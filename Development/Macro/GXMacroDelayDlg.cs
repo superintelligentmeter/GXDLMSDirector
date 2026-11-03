@@ -1,3 +1,4 @@
+﻿// Modified by Superintelligent Meter contributors, 2026-10-30: measure native confirmation groups without changing actions. GPL-2.0-only; original notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-30: align and bound native property inputs. GPL-2.0-only; existing notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-29: offline UI review and dialog correctness fixes. GPL-2.0-only; existing notices retained.
 using System;
@@ -17,7 +18,8 @@ namespace GXDLMSDirector.Macro
         public GXMacroDelayDlg(GXMacro macro)
         {
             InitializeComponent();
-            DirectorPropertyRows.AlignNativeRows(this, (NameLbl, NameTb), (DelayLbl, DelayTb), (DescriptionLbl, DescriptionTb));
+            Gurux.DLMS.UI.NativeDialogFooter.Apply(this, OKBtn, CancelBtn);
+            DirectorPropertyRows.AlignNativeRows(NameTb.Parent, (NameLbl, NameTb), (DelayLbl, DelayTb), (DescriptionLbl, DescriptionTb));
             _macro = macro;
             int delay = 1000;
             if (!string.IsNullOrEmpty(macro.Value))

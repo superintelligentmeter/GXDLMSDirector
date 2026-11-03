@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-30: measure native confirmation groups without changing actions. GPL-2.0-only; original notices retained.
 //
 // --------------------------------------------------------------------------
 //  Gurux Ltd
@@ -51,6 +52,7 @@ namespace GXDLMSDirector
         public OBISCodesForm(GXManufacturerCollection manufacturers, string selectedManufacturer, ObjectType Interface, string ln)
         {
             InitializeComponent();
+            Gurux.DLMS.UI.NativeDialogFooter.ApplyToPanel(this, panel1, OKBtn, CancelBtn);
             ManufacturerNameCH.Width = -2;
             NewBtn.Enabled = manufacturers.Count != 0;
             EditBtn.Enabled = RemoveBtn.Enabled = false;

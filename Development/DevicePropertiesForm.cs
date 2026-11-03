@@ -1,3 +1,5 @@
+// Superintelligent Meter contributors, 2026-10-31: Ignore SNRM inside the HDLC group; Frame section bounded like Secured Connections; layout assembled in one batch. GPL-2.0-only; existing notices retained.
+// Modified by Superintelligent Meter contributors, 2026-10-30: text-safe native XML clipboard/apply action row. GPL-2.0-only; original notices retained.
 // Superintelligent Meter contributors, 2026-10-30. Keep imported ciphering selectors reachable by scrolling. GPL-2.0-only; existing notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-29: offline UI review and dialog correctness fixes. GPL-2.0-only; existing notices retained.
 // Modified for the superintelligentmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
@@ -182,29 +184,156 @@ namespace GXDLMSDirector
             {
                 GXDLMS.Common.Error.ShowError(this, Ex);
             }
-            SettingsDialogLayout.Apply(this, DeviceTab, OKBtn, CancelBtn, InitialSettingsBtn, ShowAsHex);
-            addressFieldsRight96 = Math.Max(ClientAddTB.Right, Math.Max(ResendTb.Right, PhysicalServerAddressTB.Right)) * 96f / DeviceDpi;
-            DeviceSettingsTab.Layout += (_, _) => AlignAddressFields();
-            DpiChanged += (_, _) => BeginInvoke((Action)AlignAddressFields);
-            AlignAddressFields();
-        }
-
-        private bool aligningAddressFields;
-        private float addressFieldsRight96;
-        private void AlignAddressFields()
-        {
-            if (aligningAddressFields || IsDisposed) return;
-            aligningAddressFields = true;
+            // Presentation only: assemble the modern layout with container layout suspended,
+            // then lay each container out once (see DevicePropertiesForm.Layout.cs).
+            BeginLayoutBatch();
             try
             {
-                int gap = Math.Max(4, (int)Math.Round(6 * DeviceDpi / 96d));
-                int left = Math.Max(ClientAddLbl.Right, Math.Max(ResendLbl.Right, PhysicalServerAddressLbl.Right)) + gap;
-                int right = (int)Math.Round(addressFieldsRight96 * DeviceDpi / 96d);
-                foreach (var editor in new[] { ClientAddTB, ResendTb, PhysicalServerAddressTB })
-                    editor.SetBounds(left, editor.Top, Math.Max(60, right - left), editor.Height);
+                SettingsDialogLayout.Apply(this, DeviceTab, OKBtn, CancelBtn, InitialSettingsBtn, ShowAsHex);
+                ConfigureXmlActions();
+                ConfigureSecuredConnectionsLayout();
+                ConfigureStablePropertiesLayout();
             }
-            finally { aligningAddressFields = false; }
+            finally { EndLayoutBatch(); }
         }
+
+        // Preserve XML editor insets and all original clipboard/apply controls.
+
+
+        private void ConfigureSecuredConnectionsLayout()
+        {
+            int S(int value) => (int)Math.Round(value * DeviceDpi / 96d);
+            var common = (TableLayoutPanel)SettingsPanel.Controls[0];
+            var securityRows = (TableLayoutPanel)common.Controls.Find("SecurityGroupFields", true)[0];
+
+            groupBox2.Text = "Invocation counter";
+            groupBox2.MaximumSize = Size.Empty;
+            groupBox2.AutoSize = true; groupBox2.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            groupBox2.Dock = DockStyle.Top; groupBox2.Padding = new Padding(S(8));
+            groupBox2.Margin = new Padding(0, S(4), 0, S(4));
+            var counters = Batched(new TableLayoutPanel { Name = "InvocationCounterFields", Dock = DockStyle.Top,
+                AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, ColumnCount = 3,
+                RowCount = 3, Margin = Padding.Empty, Padding = Padding.Empty });
+            counters.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, S(144)));
+            counters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            counters.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, S(88)));
+            for (int row=0; row<3; row++) counters.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            InvocationCounterCb.Dock = DockStyle.Top;
+            InvocationCounterCb.Margin = new Padding(0, S(4), 0, S(4)); InvocationCounterCb.TabIndex = 0;
+            counters.Controls.Add(InvocationCounterCb, 0, 0); counters.SetColumnSpan(InvocationCounterCb, 2);
+            void CounterRow(Label label, TextBox field, int row)
+            {
+                label.AutoSize = false; label.Dock = DockStyle.Fill;
+                label.TextAlign = ContentAlignment.MiddleLeft;
+                label.Margin = new Padding(0, S(4), S(12), S(4)); label.TabIndex = row*2;
+                field.Dock = DockStyle.Top; field.Margin = new Padding(0, S(4), 0, S(4)); field.TabIndex = row*2+1;
+                counters.Controls.Add(label, 0, row); counters.Controls.Add(field, 1, row);
+            }
+            CounterRow(InvocationCounterLbl, InvocationCounterTB, 1);
+            CounterRow(FrameCounterLbl, FrameCounterTb, 2);
+            groupBox2.Controls.Add(counters);
+            Gurux.DLMS.UI.EditorLayoutPolicy.ShareLabelColumn(counters, securityRows);
+            int counterRow=common.RowCount++;
+            common.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            common.Controls.Add(groupBox2, 0, counterRow); common.SetColumnSpan(groupBox2, 3);
+            SettingsPanel.Dock = DockStyle.Fill; SettingsPanel.Margin = Padding.Empty;
+            CipheringTab.Padding = new Padding(S(6));
+
+
+            HdlcGroup.AutoSize = true; HdlcGroup.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            HdlcGroup.Dock = DockStyle.Top; HdlcGroup.Padding = new Padding(S(8));
+            var hdlcFields = Batched(new TableLayoutPanel { Name = "HdlcFields", Dock = DockStyle.Top,
+                AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, ColumnCount = 3, RowCount = 5,
+                Margin = Padding.Empty, Padding = Padding.Empty });
+            hdlcFields.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            hdlcFields.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, S(100)));
+            hdlcFields.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            void HdlcRow(Label label, Control field, int row)
+            {
+                hdlcFields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+                label.AutoSize = true; label.Anchor = AnchorStyles.Left; label.Dock = DockStyle.None;
+                label.Margin = new Padding(0, S(4), S(12), S(4)); label.TabIndex = row*3;
+                field.Dock = DockStyle.Top; field.Margin = new Padding(0, S(4), 0, S(4)); field.TabIndex = row*3+1;
+                hdlcFields.Controls.Add(label, 0, row); hdlcFields.Controls.Add(field, 1, row);
+            }
+            HdlcRow(MaxInfoTXLbl, MaxInfoTXTb, 0); HdlcRow(MaxInfoRXLbl, MaxInfoRXTb, 1);
+            HdlcRow(WindowSizeTXLbl, WindowSizeTXTb, 2); HdlcRow(WindowSizeRXLbl, WindowSizeRXTb, 3);
+            HdlcRow(label5, ServerAddressSizeCb, 4);
+            FrameSizeCb.AutoSize = true; FrameSizeCb.Dock = DockStyle.None; FrameSizeCb.Anchor = AnchorStyles.Left;
+            FrameSizeCb.Margin = new Padding(S(12), S(4), 0, S(4)); FrameSizeCb.TabIndex = 2;
+            hdlcFields.Controls.Add(FrameSizeCb, 2, 0);
+            // The original Ignore SNRM option is an HDLC connection setting: keep it in
+            // the HDLC group on the caption rail rather than floating below the frame.
+            var framing = ciphering.GetFramingTab();
+            var ignore = framing.Controls[0];
+            hdlcFields.RowCount = 6;
+            hdlcFields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            ignore.Dock = DockStyle.None; ignore.Anchor = AnchorStyles.Left; ignore.AutoSize = true;
+            ignore.Margin = new Padding(0, S(4), 0, S(4)); ignore.TabIndex = 15;
+            hdlcFields.Controls.Add(ignore, 0, 5); hdlcFields.SetColumnSpan(ignore, 3);
+            HdlcGroup.Controls.Add(hdlcFields);
+            // Same bounded section width as the Secured Connections groups.
+            var frameRows = Batched(new TableLayoutPanel { Name = "FrameSettingsLayout", Dock = DockStyle.Top,
+                AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, ColumnCount = 1, RowCount = 1,
+                Margin = Padding.Empty, Padding = new Padding(S(8)), MaximumSize = new Size(S(816), 0) });
+            frameRows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            frameRows.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            HdlcGroup.Dock = DockStyle.Top; HdlcGroup.Anchor = AnchorStyles.Top|AnchorStyles.Left;
+            HdlcGroup.Margin = Padding.Empty;
+            frameRows.Controls.Add(HdlcGroup, 0, 0);
+            HdlcFrameTab.Padding = Padding.Empty; HdlcFrameTab.AutoScroll = true;
+            HdlcFrameTab.Controls.Add(frameRows);
+            bool applyingMetrics = false;
+            void ApplyGroupMetrics()
+            {
+                if (applyingMetrics || IsDisposed) return;
+                applyingMetrics = true;
+                try
+                {
+                    int Scale(Control control, int v) => (int)Math.Round(v * control.DeviceDpi / 96d);
+                    foreach (var rows in new[] { counters, hdlcFields })
+                    {
+                        int D(int v) => Scale(rows, v);
+                        if (rows.Parent is GroupBox group) group.Padding = new Padding(D(8));
+                        foreach (Control cell in rows.Controls)
+                        {
+                            int column = rows.GetColumn(cell);
+                            cell.Margin = new Padding(column == 2 ? D(12) : 0, D(4),
+                                cell is Label && column == 0 ? D(12) : 0, D(4));
+                        }
+                    }
+                    hdlcFields.ColumnStyles[1].Width = Scale(hdlcFields, 100);
+                    counters.ColumnStyles[2].Width = Scale(counters, 88);
+                    groupBox2.Margin = new Padding(0, Scale(common, 4), 0, Scale(common, 4));
+                    frameRows.Padding = new Padding(Scale(frameRows, 8));
+                    frameRows.MaximumSize = new Size(Scale(frameRows, 816), 0);
+                }
+                finally { applyingMetrics = false; }
+            }
+            counters.Layout += (_, _) => ApplyGroupMetrics();
+            hdlcFields.Layout += (_, _) => ApplyGroupMetrics();
+            frameRows.DpiChangedAfterParent += (_, _) => ApplyGroupMetrics();
+            counters.DpiChangedAfterParent += (_, _) => ApplyGroupMetrics();
+            ApplyGroupMetrics();
+
+            // Content changes belong to this scrollable viewport. Security modes,
+            // validation hints and signing options must never resize the window.
+        }
+
+        private void ConfigureXmlActions()
+        {
+            var body = Batched(new Panel { Name = "DeviceXmlEditor", Dock = DockStyle.Fill,
+                Padding = new Padding(textBox1.Left, textBox1.Top,
+                    System.Math.Max(0, XmlTab.ClientSize.Width - textBox1.Right),
+                    System.Math.Max(0, CopyBtn.Top - textBox1.Bottom)) });
+            var footer = Batched(new Panel { Name = "DeviceXmlActions", Dock = DockStyle.Bottom });
+            textBox1.Dock = DockStyle.Fill; textBox1.Margin = Padding.Empty;
+            body.Controls.Add(textBox1); XmlTab.Controls.Add(body); XmlTab.Controls.Add(footer);
+            SettingsDialogLayout.ApplySplitActions(footer, new[] { CopyBtn, PasteFromClipboardBtn }, new[] { ApplyBtn },
+                textBox1, "XmlEditorActions");
+            body.BringToFront();
+        }
+
         private void UpdateMediaSettings()
         {
             this.MediasCB.Items.Clear();
@@ -755,6 +884,9 @@ namespace GXDLMSDirector
                     CustomSettings.Controls.Clear();
                     MediaPropertiesForm = SelectedMedia.PropertiesForm;
                     (MediaPropertiesForm as IGXPropertyPage).Initialize();
+                    // Preserve the media editor's full content extent, including
+                    // fields below the legacy serial/network group height.
+                    var mediaContent = CreateMediaContent(MediaPropertiesForm);
                     while (MediaPropertiesForm.Controls.Count != 0)
                     {
                         Control ctr = MediaPropertiesForm.Controls[0];
@@ -766,9 +898,10 @@ namespace GXDLMSDirector
                                 continue;
                             }
                         }
-                        CustomSettings.Controls.Add(ctr);
+                        mediaContent.Controls.Add(ctr);
                         ctr.Visible = true;
                     }
+                    HostMediaContent(mediaContent);
                 }
                 UpdateStartProtocol();
             }

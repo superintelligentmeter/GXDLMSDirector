@@ -28,7 +28,9 @@ namespace GXDLMSDirector
             foreach (var b in w.Bindings) grid.Rows.Add(b.Label, b.Obis, b.Attribute);
             grid.ClearSelection(); grid.CurrentCell = null;
             box.Controls.Add(grid);
-            refreshViews.Add(() => { for (int i = 0; i < w.Bindings.Count; i++) { var b = w.Bindings[i]; var s = State(b.Key); grid.Rows[i].Cells[6].Value = MeterLabel(b); grid.Rows[i].Cells[3].Value = s.Text + " " + s.Unit; grid.Rows[i].Cells[4].Value = Quality(b); grid.Rows[i].Cells[5].Value = s.Success?.ToLocalTime().ToString("G") ?? "Never"; } });
+            // Write a cell only when its text changed; unchanged cells are not repainted.
+            static void SetCell(DataGridViewCell cell, string text) { if (!Equals(cell.Value, text)) cell.Value = text; }
+            refreshViews.Add(() => { for (int i = 0; i < w.Bindings.Count; i++) { var b = w.Bindings[i]; var s = State(b.Key); var cells = grid.Rows[i].Cells; SetCell(cells[6], MeterLabel(b)); SetCell(cells[3], s.Text + " " + s.Unit); SetCell(cells[4], Quality(b)); SetCell(cells[5], s.Success?.ToLocalTime().ToString("G") ?? "Never"); } });
         }
         private static string ShortChartLabel(string text, int max) => text.Length <= max ? text : text.Substring(0, max - 1) + "…";
         private void BuildChart(Panel box, DashboardWidget w)
@@ -40,10 +42,24 @@ namespace GXDLMSDirector
             box.Controls.Add(chart);
             var empty = new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, ForeColor = muted, BackColor = Color.White, Padding = new Padding(16), Text = "No numeric readings yet. Read now or enable Monitor to start the trend." };
             box.Controls.Add(empty); empty.BringToFront();
-            var lastCounts = new Dictionary<string, DateTime?>();
             var areas = new Dictionary<string, string>();
+            string lastSignature = null;
+            void UpdateTimeBounds()
+            {
+                var now = DateTime.Now;
+                foreach (var pane in chart.ChartAreas)
+                {
+                    pane.AxisX.Minimum = now.AddMinutes(-chartMinutes).ToOADate();
+                    pane.AxisX.Maximum = now.ToOADate();
+                    pane.AxisX.LabelStyle.Format = "HH:mm";
+                }
+            }
             refreshViews.Add(() =>
             {
+                // Redraw the chart only when a new sample arrived or the shown range changed.
+                string signature = chartMinutes + "|" + string.Join(";", w.Bindings.Select(b => { var st = State(b.Key); return MeterLabel(b) + ":" + st.Numeric + ":" + st.Unit + ":" + (st.Points.Count == 0 ? 0 : st.Points[st.Points.Count - 1].Time.Ticks) + ":" + st.Points.Count; }));
+                if (signature == lastSignature) { UpdateTimeBounds(); return; }
+                lastSignature = signature;
                 bool hasNumeric = w.Bindings.Any(b => State(b.Key).Numeric && State(b.Key).Success.HasValue);
                 empty.Visible = !hasNumeric; chart.Visible = hasNumeric;
                 if (!hasNumeric) return;
@@ -65,20 +81,12 @@ namespace GXDLMSDirector
                     series.ChartArea = areaName; series.MarkerStyle = s.Points.Count(p => !double.IsNaN(p.Value)) == 1 ? MarkerStyle.Circle : MarkerStyle.None; series.MarkerSize = 5;
                     series.LegendText = ShortChartLabel(MeterLabel(b), 30) + " / " + ShortChartLabel(b.Label, 32); series.LegendToolTip = MeterLabel(b) + " / " + b.Label; series.ToolTip = b.Label + ": #VALY " + s.Unit;
                     series.Color = new[] { Color.FromArgb(0, 120, 215), Color.FromArgb(0, 155, 150), Color.SlateGray }[w.Bindings.IndexOf(b) % 3];
-                    DateTime? newest = s.Points.Count == 0 ? null : s.Points[s.Points.Count - 1].Time;
-                    if (lastCounts.TryGetValue(b.Key, out var previous) && previous == newest) continue;
-                    lastCounts[b.Key] = newest;
                     series.Points.Clear();
                     foreach (var point in s.Points.Where(p => p.Time >= DateTime.UtcNow.AddMinutes(-chartMinutes)))
                         if (double.IsNaN(point.Value)) series.Points.Add(new DataPoint(point.Time.ToLocalTime().ToOADate(), 0) { IsEmpty = true });
                         else series.Points.AddXY(point.Time.ToLocalTime(), point.Value);
                 }
-                foreach (var pane in chart.ChartAreas)
-                {
-                    pane.AxisX.Minimum = DateTime.Now.AddMinutes(-chartMinutes).ToOADate();
-                    pane.AxisX.Maximum = DateTime.Now.ToOADate();
-                    pane.AxisX.LabelStyle.Format = "HH:mm";
-                }
+                UpdateTimeBounds();
                 string activeArea = chart.Series.First(x => x.Enabled).ChartArea;
                 foreach (var series in chart.Series.Where(x => !x.Enabled)) series.ChartArea = activeArea;
                 // Distinct units have separate axes; never plot volts and amps on one scale.

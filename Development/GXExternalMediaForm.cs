@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-30: measure native confirmation groups without changing actions. GPL-2.0-only; original notices retained.
 // Modified for the superintelligentmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 //
 // --------------------------------------------------------------------------
@@ -53,6 +54,7 @@ namespace GXDLMSDirector
         public GXExternalMediaForm()
         {
             InitializeComponent();
+            Gurux.DLMS.UI.NativeDialogFooter.Apply(this, OKBtn, CancelBtn);
         }
 
         private bool IsMedia(string fileName)

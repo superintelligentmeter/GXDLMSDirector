@@ -1,3 +1,4 @@
+﻿// Modified by Superintelligent Meter contributors, 2026-10-30: measure native confirmation groups without changing actions. GPL-2.0-only; original notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-30: align and bound native property inputs. GPL-2.0-only; existing notices retained.
 ﻿using System;
 using System.Collections.Generic;
@@ -16,7 +17,8 @@ namespace GXDLMSDirector.Macro
         public GXMacroEditDlg(GXMacro macro)
         {
             InitializeComponent();
-            DirectorPropertyRows.AlignNativeRows(this, (NameLbl, NameTb), (DescriptionLbl, DescriptionTb));
+            Gurux.DLMS.UI.NativeDialogFooter.Apply(this, OKBtn, CancelBtn);
+            DirectorPropertyRows.AlignNativeRows(NameTb.Parent, (NameLbl, NameTb), (DescriptionLbl, DescriptionTb));
             _macro = macro;
             NameTb.Text = macro.Name;
             DescriptionTb.Text = macro.Description;

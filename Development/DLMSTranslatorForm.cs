@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-11-01: rounded tab headers. GPL-2.0-only; original notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-29: offline UI review and dialog correctness fixes. GPL-2.0-only; existing notices retained.
 // Modified for the superintelligentmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 using Gurux.Common;
@@ -68,6 +69,7 @@ namespace GXDLMSDirector
         {
             this.storageDirectory = storageDirectory;
             InitializeComponent();
+            ModernPresentation.RoundTabs(tabControl1, 18);   // rounded tab headers, compact to match the toolbar controls
             InterfaceCb.Items.Add("");
             foreach (InterfaceType it in Enum.GetValues(typeof(InterfaceType)))
             {

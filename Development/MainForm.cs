@@ -1,3 +1,6 @@
+// Modified by Superintelligent Meter contributors, 2026-11-01: General tab layout through LayOutDeviceInfo. GPL-2.0-only; original notices retained.
+// Modified by Superintelligent Meter contributors, 2026-11-01: About box through AboutPresentation. GPL-2.0-only; original notices retained.
+// Modified by Superintelligent Meter contributors, 2026-10-31: manufacturer update and first-run check through ManufacturerSettingsStore on .NET 10. GPL-2.0-only; original notices retained.
 // Modified for the superintelligentmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 //
 // --------------------------------------------------------------------------
@@ -92,7 +95,14 @@ namespace GXDLMSDirector
         Form[] addInForms = null;
 
         delegate void CheckUpdatesEventHandler(MainForm form);
-        GXAsyncWork TransactionWork;
+        GXAsyncWork transactionWork;
+        // Starting a meter operation tells a running dashboard read to stop after its current request.
+        // CreateUserWork waits on its worker before the manual command can mutate the DLMS client.
+        GXAsyncWork TransactionWork
+        {
+            get => transactionWork;
+            set { if (value != null) YieldDashboardToUser(); transactionWork = value; }
+        }
         Dictionary<Type, List<IGXDLMSView>> Views;
         String path;
         internal GXManufacturerCollection Manufacturers;
@@ -178,6 +188,7 @@ namespace GXDLMSDirector
                 Application.SetCompatibleTextRenderingDefault(false);
             }
             MainForm form = new MainForm();
+            ApplicationMessageBox.SetDefaultOwner(form);
             Application.Run(form);
         }
 
@@ -294,6 +305,7 @@ namespace GXDLMSDirector
             InsetTabularView(PropertyErrorView, tabPage3);
             InsetTabularView(Accessrights, tabPage2);
             InsetTabularView(MethodAccess, tabPage8);
+            LayOutDeviceInfo();
             ModernPresentation.Apply(this);
 
             panel1.Layout += (_, _) => UpdateOutputDividers();
@@ -665,11 +677,11 @@ namespace GXDLMSDirector
                     LogicalAddressValueLbl.Text = dev.LogicalAddress.ToString();
                     if (dev.Broadcast)
                     {
-                        PhysicalAddressLbl.Text = "Broadcast address";
+                        PhysicalAddressLbl.Text = "Broadcast address:";
                     }
                     else
                     {
-                        PhysicalAddressLbl.Text = "Physical address";
+                        PhysicalAddressLbl.Text = "Physical address:";
                     }
                     PhysicalAddressValueLbl.Text = dev.PhysicalAddress.ToString();
                     if (d != null)
@@ -695,13 +707,21 @@ namespace GXDLMSDirector
                         if (errors.Count != 0)
                         {
                             int count = (it as IGXDLMSBase).GetAttributeCount() + 1;
+                            // An error can be recorded for an attribute above the class attribute count.
+                            foreach (var key in errors.Keys)
+                            {
+                                if (key + 1 > count)
+                                {
+                                    count = key + 1;
+                                }
+                            }
                             int add = ErrorsView.Columns.Count;
                             count -= add;
                             for (int pos = 0; pos < count; ++pos)
                             {
                                 ErrorsView.Columns.Add("Attribute " + (add + pos).ToString());
                             }
-                            count = (it as IGXDLMSBase).GetAttributeCount();
+                            count = Math.Max((it as IGXDLMSBase).GetAttributeCount(), errors.Keys.Max());
                             ListViewItem lv = new ListViewItem(it.LogicalName + " " + it.Description);
                             lv.Tag = it;
                             for (int pos = 0; pos < count; ++pos)
@@ -950,7 +970,7 @@ namespace GXDLMSDirector
                 string[] names = (target as IGXDLMSBase).GetNames();
                 foreach (var it in (target as GXDLMSObject).GetLastErrors())
                 {
-                    bindingSource2.Add(new GXLastError() { Index = it.Key, Name = names[it.Key - 1], Error = it.Value.Message });
+                    bindingSource2.Add(new GXLastError() { Index = it.Key, Name = it.Key - 1 < names.Length ? names[it.Key - 1] : "Attribute " + it.Key, Error = it.Value.Message });
                 }
                 if (bindingSource2.Count == 0)
                 {
@@ -1117,6 +1137,7 @@ namespace GXDLMSDirector
                         {
                             if (dirty && index != 0)
                             {
+                                Gurux.DLMS.UI.ModernPresentation.PrepareErrorMarker(view, it);
                                 view.ErrorProvider.SetError(it, GXDLMSDirector.Properties.Resources.ValueChangedTxt);
                             }
                             else if (index != 0)
@@ -1484,7 +1505,7 @@ namespace GXDLMSDirector
                 {
                     throw new Exception("Transaction in progress.");
                 }
-                TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, OnAction, OnError, null, new object[] { sender });
+                TransactionWork = CreateUserWork(this, OnAsyncStateChange, OnAction, OnError, null, new object[] { sender });
                 TransactionWork.Start();
             }
             catch (Exception ex)
@@ -1711,15 +1732,8 @@ namespace GXDLMSDirector
         {
             try
             {
-                GXAboutForm lic = new GXAboutForm();
-                lic.Title = GXDLMSDirector.Properties.Resources.AboutGXDLMSDirectorTxt;
-                lic.Application = GXDLMSDirector.Properties.Resources.GXDLMSDirectorTxt;
-                lic.AboutText = GXDLMSDirector.Properties.Resources.ForMoreInfoTxt;
-                lic.CopyrightText = GXDLMSDirector.Properties.Resources.CopyrightTxt;
-                //Get version info
-                System.Reflection.Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
-                FileVersionInfo info = FileVersionInfo.GetVersionInfo(asm.Location);
-                lic.ShowAbout(this, info.FileVersion);
+                //The fork's texts, version and repository links are set in AboutPresentation.
+                AboutPresentation.Show(this);
             }
             catch (Exception Ex)
             {
@@ -1727,7 +1741,7 @@ namespace GXDLMSDirector
             }
         }
 
-        private static void Save(string path, GXDLMSMeterCollection devices)
+        private static void Save(string path, GXDLMSMeterCollection devices, string dashboardJson = null)
         {
             using (Stream stream = File.Open(path, FileMode.Create))
             {
@@ -1748,7 +1762,19 @@ namespace GXDLMSDirector
                         tmp.Add(it as GXDLMSDevice);
                     }
                     XmlSerializer x = new XmlSerializer(typeof(GXDLMSDeviceCollection), overrides, types.ToArray(), null, "Gurux1");
-                    x.Serialize(writer, tmp);
+                    if (string.IsNullOrEmpty(dashboardJson))
+                    {
+                        x.Serialize(writer, tmp);
+                    }
+                    else
+                    {
+                        // Same file as before, plus one optional dashboards element.
+                        using (StringWriter text = new Utf8StringWriter())
+                        {
+                            x.Serialize(text, tmp);
+                            writer.Write(InsertDashboardJson(text.ToString(), dashboardJson));
+                        }
+                    }
                     writer.Close();
                 }
                 stream.Close();
@@ -1757,7 +1783,8 @@ namespace GXDLMSDirector
 
         private void SaveFile(string path)
         {
-            Save(path, Devices);
+            FlushDashboardChanges();
+            Save(path, Devices, DashboardJsonForSave());
             SetDirty(false);
             mruManager.Insert(0, path);
         }
@@ -1849,7 +1876,7 @@ namespace GXDLMSDirector
             {
                 if (MessageBox.Show(this, Properties.Resources.ReadAssociationView, Properties.Resources.GXDLMSDirectorTxt, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Refresh, OnError, null, new object[] { device });
+                    TransactionWork = CreateUserWork(this, OnAsyncStateChange, Refresh, OnError, null, new object[] { device });
                 }
                 TransactionWork.Start();
             }
@@ -1963,11 +1990,11 @@ namespace GXDLMSDirector
             ClearTrace();
             if (tabControl1.SelectedIndex == 0)
             {
-                TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Connect, OnError, null, new object[] { ObjectTree.SelectedNode.Tag });
+                TransactionWork = CreateUserWork(this, OnAsyncStateChange, Connect, OnError, null, new object[] { ObjectTree.SelectedNode.Tag });
             }
             else
             {
-                TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Connect, OnError, null, new object[] { GetDevices() });
+                TransactionWork = CreateUserWork(this, OnAsyncStateChange, Connect, OnError, null, new object[] { GetDevices() });
             }
             TransactionWork.Start();
         }
@@ -2067,11 +2094,11 @@ namespace GXDLMSDirector
         {
             if (tabControl1.SelectedIndex == 0)
             {
-                TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Disconnect, OnError, null, new object[] { ObjectTree.SelectedNode.Tag });
+                TransactionWork = CreateUserWork(this, OnAsyncStateChange, Disconnect, OnError, null, new object[] { ObjectTree.SelectedNode.Tag });
             }
             else
             {
-                TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Disconnect, OnError, null, new object[] { GetDevices() });
+                TransactionWork = CreateUserWork(this, OnAsyncStateChange, Disconnect, OnError, null, new object[] { GetDevices() });
             }
             TransactionWork.Start();
         }
@@ -2534,16 +2561,18 @@ namespace GXDLMSDirector
             }
             else
             {
+                // While a dashboard is shown, several meters can write here, so each line names its meter.
+                string who = DashboardTracePrefix(sender);
                 //Show data as hex.
                 if (traceLevel == 1)
                 {
                     if (TraceTimeMnu.Checked)
                     {
-                        TraceView.AppendText(time.ToString("HH:mm:ss") + " " + trace + " " + GXCommon.ToHex(data, true) + Environment.NewLine);
+                        TraceView.AppendText(time.ToString("HH:mm:ss") + " " + who + trace + " " + GXCommon.ToHex(data, true) + Environment.NewLine);
                     }
                     else
                     {
-                        TraceView.AppendText(trace + " " + GXCommon.ToHex(data, true) + Environment.NewLine);
+                        TraceView.AppendText(who + trace + " " + GXCommon.ToHex(data, true) + Environment.NewLine);
                     }
                 }
                 else if (data != null && data.Length != 0 && (traceLevel == 2 || traceLevel == 3))
@@ -2563,11 +2592,11 @@ namespace GXDLMSDirector
                             string xml = traceTranslator.MessageToXml(receivedTraceData);
                             if (TraceTimeMnu.Checked)
                             {
-                                TraceView.AppendText(Environment.NewLine + time.ToString("HH:mm:ss") + Environment.NewLine + xml);
+                                TraceView.AppendText(Environment.NewLine + time.ToString("HH:mm:ss") + (who.Length != 0 ? " " + who.TrimEnd() : "") + Environment.NewLine + xml);
                             }
                             else
                             {
-                                TraceView.AppendText(Environment.NewLine + xml);
+                                TraceView.AppendText(Environment.NewLine + (who.Length != 0 ? who.TrimEnd() + Environment.NewLine : "") + xml);
                             }
                             receivedTraceData.Trim();
                         }
@@ -3074,7 +3103,7 @@ namespace GXDLMSDirector
                 this.ObjectTree.Focus();
                 if (this.ObjectTree.SelectedNode != null)
                 {
-                    TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Read, OnError, null, new object[] { this.ObjectTree.SelectedNode.Tag, SelectedView });
+                    TransactionWork = CreateUserWork(this, OnAsyncStateChange, Read, OnError, null, new object[] { this.ObjectTree.SelectedNode.Tag, SelectedView });
                     TransactionWork.Start();
                 }
             }
@@ -3087,17 +3116,20 @@ namespace GXDLMSDirector
                     {
                         items.Add(it.Tag as GXDLMSObject);
                     }
-                    TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Read, OnError, null, new object[] { items, SelectedView });
+                    TransactionWork = CreateUserWork(this, OnAsyncStateChange, Read, OnError, null, new object[] { items, SelectedView });
                     TransactionWork.Start();
                 }
             }
         }
 
-        private void WriteMnu_Click(object sender, EventArgs e)
+        private async void WriteMnu_Click(object sender, EventArgs e)
         {
             try
             {
                 UpdateTransaction(true);
+                using var operation = BeginUserMeterOperation();
+                await operation.Ready;
+                if (IsDisposed) return;
                 if (this.ObjectTree.SelectedNode != null)
                 {
                     //Read all objects if device is selected.
@@ -3532,10 +3564,12 @@ namespace GXDLMSDirector
                 }
             }
             if (!PrepareDashboardsForClose()) return;
-            ClearDashboardWorkspace();
+            // Keep the current dashboard data until the user has saved or discarded it.
+            // The file-loading branch clears it through NewMnu_Click after confirmation.
             int version = 1;
             if (activeDC != null)
             {
+                ClearDashboardWorkspace();
                 Devices.Clear();
                 Devices.AddRange((GXDLMSMeter[])activeDC.GetDevices(null));
                 TreeNode node = ObjectTree.Nodes[0];
@@ -3662,6 +3696,8 @@ namespace GXDLMSDirector
             GroupItems(GroupsMnu.Checked, null);
             this.path = path;
             SetDirty(false);
+            LoadDashboardJson(ReadDashboardJson(path));
+            RefreshDashboardNavigation();
             if (path != null)
             {
                 mruManager.Insert(0, path);
@@ -3918,7 +3954,26 @@ namespace GXDLMSDirector
                 node = ObjectTreeItems[(it.Parent.Tag.GetHashCode() << 32) + it.ObjectType] as TreeNode;
                 if (node == null)
                 {
-                    node = deviceNode.Nodes.Add(it.ObjectType.ToString());
+                    // Keep the interface class nodes ordered by class id (the id of ObjectType), not by load order.
+                    int insertAt = deviceNode.Nodes.Count;
+                    for (int position = 0; position != deviceNode.Nodes.Count; ++position)
+                    {
+                        if (deviceNode.Nodes[position].Tag is GXDLMSObjectCollection siblings)
+                        {
+                            if (siblings.Count != 0 && (int)siblings[0].ObjectType > (int)it.ObjectType)
+                            {
+                                insertAt = position;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            //Anything after the class nodes (such as Dashboards) stays last.
+                            insertAt = position;
+                            break;
+                        }
+                    }
+                    node = deviceNode.Nodes.Insert(insertAt, it.ObjectType.ToString());
                     node.SelectedImageIndex = node.ImageIndex = TreeIcons.ObjectIndex(it.ObjectType, true);
                     ObjectTreeItems[(it.Parent.Tag.GetHashCode() << 32) + it.ObjectType] = node;
                     objects = new GXDLMSObjectCollection();
@@ -4186,7 +4241,7 @@ namespace GXDLMSDirector
         {
             if (tabControl1.SelectedIndex == 0)
             {
-                TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Refresh, OnError, null, new object[] { ObjectTree.SelectedNode.Tag });
+                TransactionWork = CreateUserWork(this, OnAsyncStateChange, Refresh, OnError, null, new object[] { ObjectTree.SelectedNode.Tag });
             }
             else
             {
@@ -4195,7 +4250,7 @@ namespace GXDLMSDirector
                 {
                     items.Add(it.Tag as GXDLMSObject);
                 }
-                TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Refresh, OnError, null, new object[] { items });
+                TransactionWork = CreateUserWork(this, OnAsyncStateChange, Refresh, OnError, null, new object[] { items });
             }
             TransactionWork.Start();
         }
@@ -4369,6 +4424,7 @@ namespace GXDLMSDirector
                 {
                     if (Node.Bounds.Contains(pt))
                     {
+                        if (TryShowDashboardMenu(Node, pt)) return;
                         ObjectTree.SelectedNode = Node;
                         ConfigureContextMenu();
                         contextMenuStrip1.Show(ObjectTree, pt);
@@ -4449,13 +4505,13 @@ namespace GXDLMSDirector
                 MacroEditor.OnSet += MacroEditor_OnSet;
                 MacroEditor.OnAction += MacroEditor_OnAction;
                 MacroEditor.OnExecuted += ActionsView_OnExecuted;
-                if (GXManufacturerCollection.IsFirstRun())
+                if (ManufacturerSettingsStore.IsFirstRun())
                 {
                     if (MessageBox.Show(this, GXDLMSDirector.Properties.Resources.InstallManufacturersOnlineTxt, GXDLMSDirector.Properties.Resources.GXDLMSDirectorTxt, MessageBoxButtons.YesNoCancel) == DialogResult.Yes)
                     {
                         try
                         {
-                            GXManufacturerCollection.UpdateManufactureSettings();
+                            ManufacturerSettingsStore.UpdateManufactureSettings();
                         }
                         catch (Exception ex)
                         {
@@ -4677,6 +4733,8 @@ namespace GXDLMSDirector
 
         private void MacroEditor_OnAction(GXMacro act)
         {
+            using var operation = BeginUserMeterOperation();
+            WaitForDashboardRead(operation);
             GXDLMSDevice dev = GetDevice(ObjectTree.SelectedNode) as GXDLMSDevice;
             GXDLMSObject obj = GXDLMSClient.CreateObject((ObjectType)act.ObjectType, act.ObjectVersion);
             if (obj != null)
@@ -4690,6 +4748,8 @@ namespace GXDLMSDirector
 
         private void MacroEditor_OnSet(GXMacro act)
         {
+            using var operation = BeginUserMeterOperation();
+            WaitForDashboardRead(operation);
             GXDLMSDevice dev = GetDevice(ObjectTree.SelectedNode) as GXDLMSDevice;
             GXDLMSObject obj = GXDLMSClient.CreateObject((ObjectType)act.ObjectType, act.ObjectVersion);
             if (obj != null)
@@ -4711,6 +4771,8 @@ namespace GXDLMSDirector
 
         private void ActionsView_OnGet(GXMacro macro)
         {
+            using var operation = BeginUserMeterOperation();
+            WaitForDashboardRead(operation);
             GXDLMSDevice dev = GetDevice(ObjectTree.SelectedNode) as GXDLMSDevice;
             GXDLMSObject obj = GXDLMSClient.CreateObject((ObjectType)macro.ObjectType, macro.ObjectVersion);
             if (obj != null)
@@ -4755,7 +4817,7 @@ namespace GXDLMSDirector
                     }
                 }
             }
-            TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Disconnect, null, null, new object[] { dev });
+            TransactionWork = CreateUserWork(this, OnAsyncStateChange, Disconnect, null, null, new object[] { dev });
             TransactionWork.Start();
             TransactionWork.Wait(-1);
         }
@@ -4774,7 +4836,7 @@ namespace GXDLMSDirector
                     }
                 }
             }
-            TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Connect, null, null, new object[] { dev });
+            TransactionWork = CreateUserWork(this, OnAsyncStateChange, Connect, null, null, new object[] { dev });
             TransactionWork.Start();
             TransactionWork.Wait(-1);
         }
@@ -4802,10 +4864,10 @@ namespace GXDLMSDirector
                 switch (act.Type)
                 {
                     case UserActionType.Connect:
-                        TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Connect, OnError, null, new object[] { dev });
+                        TransactionWork = CreateUserWork(this, OnAsyncStateChange, Connect, OnError, null, new object[] { dev });
                         break;
                     case UserActionType.Disconnecting:
-                        TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Disconnect, OnError, null, new object[] { dev });
+                        TransactionWork = CreateUserWork(this, OnAsyncStateChange, Disconnect, OnError, null, new object[] { dev });
                         break;
                     case UserActionType.Get:
                         {
@@ -5262,7 +5324,7 @@ namespace GXDLMSDirector
             {
                 if (ManufacturerUpdateDialog.Confirm(this) == DialogResult.Yes)
                 {
-                    GXManufacturerCollection.UpdateManufactureSettings();
+                    ManufacturerSettingsStore.UpdateManufactureSettings();
                     Manufacturers = new GXManufacturerCollection();
                     GXManufacturerCollection.ReadManufacturerSettings(Manufacturers);
                 }
@@ -5552,12 +5614,13 @@ namespace GXDLMSDirector
         {
             try
             {
-                LibraryVersionsDlg dlg = new LibraryVersionsDlg();
+                using var dlg = new LibraryVersionsDlg();
+                LibraryVersionsLayout.Apply(dlg);
                 dlg.ShowDialog(this);
             }
             catch (Exception Ex)
             {
-                GXCommon.ShowError(Ex);
+                ApplicationMessageBox.Show(this, Ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0, Ex.HelpLink);
             }
         }
 
@@ -5582,7 +5645,7 @@ namespace GXDLMSDirector
             }
             catch (Exception Ex)
             {
-                GXCommon.ShowError(Ex);
+                ApplicationMessageBox.Show(this, Ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0, Ex.HelpLink);
             }
         }
 
@@ -5597,7 +5660,7 @@ namespace GXDLMSDirector
             }
             catch (Exception Ex)
             {
-                GXCommon.ShowError(Ex);
+                ApplicationMessageBox.Show(this, Ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0, Ex.HelpLink);
             }
         }
 
@@ -5616,7 +5679,7 @@ namespace GXDLMSDirector
             }
             catch (Exception Ex)
             {
-                GXCommon.ShowError(Ex);
+                ApplicationMessageBox.Show(this, Ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0, Ex.HelpLink);
             }
         }
 
@@ -5696,7 +5759,7 @@ namespace GXDLMSDirector
             }
             catch (Exception Ex)
             {
-                GXCommon.ShowError(Ex);
+                ApplicationMessageBox.Show(this, Ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0, Ex.HelpLink);
             }
 
         }
@@ -5793,7 +5856,7 @@ namespace GXDLMSDirector
             }
             catch (Exception Ex)
             {
-                GXCommon.ShowError(Ex);
+                ApplicationMessageBox.Show(this, Ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0, Ex.HelpLink);
             }
         }
 
@@ -6486,7 +6549,7 @@ namespace GXDLMSDirector
             GXConformanceTests.Continue = true;
             List<GXConformanceTest> alltests = new List<GXConformanceTest>();
             alltests.AddRange(tests);
-            TransactionWork = new GXAsyncWork(this, ConformanceStateChange, ConformanceExecute, ConformanceError, null, new object[] { tests, settings, alltests });
+            TransactionWork = CreateUserWork(this, ConformanceStateChange, ConformanceExecute, ConformanceError, null, new object[] { tests, settings, alltests });
             if (showDlg && settings.WarningBeforeStart)
             {
                 DialogResult ret = MessageBox.Show(this, Properties.Resources.CTTWarning, Properties.Resources.GXDLMSDirectorTxt, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
@@ -7211,7 +7274,7 @@ namespace GXDLMSDirector
                 this.ObjectTree.Focus();
                 if (this.ObjectTree.SelectedNode != null)
                 {
-                    TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Read, OnError, null, new object[] { this.ObjectTree.SelectedNode.Tag, SelectedView, true });
+                    TransactionWork = CreateUserWork(this, OnAsyncStateChange, Read, OnError, null, new object[] { this.ObjectTree.SelectedNode.Tag, SelectedView, true });
                     TransactionWork.Start();
                 }
             }
@@ -7224,7 +7287,7 @@ namespace GXDLMSDirector
                     {
                         items.Add(it.Tag as GXDLMSObject);
                     }
-                    TransactionWork = new GXAsyncWork(this, OnAsyncStateChange, Read, OnError, null, new object[] { items, SelectedView, true });
+                    TransactionWork = CreateUserWork(this, OnAsyncStateChange, Read, OnError, null, new object[] { items, SelectedView, true });
                     TransactionWork.Start();
                 }
             }

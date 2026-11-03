@@ -1,3 +1,4 @@
+﻿// Modified by Superintelligent Meter contributors, 2026-10-30: measure native confirmation groups without changing actions. GPL-2.0-only; original notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-30: align the bounded object selector with the data editor. GPL-2.0-only; original notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-29: offline UI review and dialog correctness fixes. GPL-2.0-only; existing notices retained.
 // Modified for the superintelligentmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
@@ -57,16 +58,26 @@ namespace GXDLMSDirector
         public OBISCodeForm(GXDLMSConverter c, GXDLMSObjectCollection objs, GXObisCodeCollection collection, GXObisCode item)
         {
             InitializeComponent();
+            Gurux.DLMS.UI.NativeDialogFooter.Apply(this, OKBtn, CancelBtn);
             // The native property grid keeps all available data width. Its type selector
             // uses the same left edge and a bounded, DPI-aware ordinary field width.
+            bool aligning = false;
             void AlignInterface()
             {
-                InterfaceCB.Left = ObisPropertyGrid.Left;
-                InterfaceCB.Width = Math.Min(ObisPropertyGrid.Width,
-                    (int)Math.Round(Gurux.DLMS.UI.EditorLayoutPolicy.FieldWidth * DeviceDpi / 96d));
+                if (aligning || InterfaceCB.IsDisposed || ObisPropertyGrid.IsDisposed) return;
+                aligning = true;
+                try
+                {
+                    int width = Math.Min(ObisPropertyGrid.Width,
+                        (int)Math.Round(Gurux.DLMS.UI.EditorLayoutPolicy.FieldWidth * InterfaceCB.DeviceDpi / 96d));
+                    if (InterfaceCB.Left != ObisPropertyGrid.Left) InterfaceCB.Left = ObisPropertyGrid.Left;
+                    if (InterfaceCB.Width != width) InterfaceCB.Width = width;
+                }
+                finally { aligning = false; }
             }
-            Layout += (_, _) => AlignInterface();
-            DpiChanged += (_, _) => AlignInterface();
+            ObisPropertyGrid.Parent.Layout += (_, _) => AlignInterface();
+            ObisPropertyGrid.Parent.DpiChangedAfterParent += (_, _) => AlignInterface();
+            ObisPropertyGrid.SizeChanged += (_, _) => AlignInterface();
             AlignInterface();
             converter = c;
             objects = objs;

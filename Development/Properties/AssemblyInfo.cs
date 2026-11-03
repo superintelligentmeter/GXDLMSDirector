@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-11-01: fork version and copyright. GPL-2.0-only; original notices retained.
 // Modified for the superintelligentmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 //
 // --------------------------------------------------------------------------
@@ -44,7 +45,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Gurux Ltd")]
 [assembly: AssemblyProduct("GXDLMSDirector Community Edition")]
-[assembly: AssemblyCopyright("Copyright (c) 1998-2025 Gurux Ltd. All rights reserved.")]
+[assembly: AssemblyCopyright("Copyright (c) 1998-2025 Gurux Ltd. All rights reserved. Fork modifications (c) 2026 superintelligentmeter contributors.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -55,6 +56,5 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("e78762b5-4e85-45c8-a9fa-e95786f77684")]
-[assembly: AssemblyVersion("0.0.0.0")]
-[assembly: AssemblyFileVersion("0.0.0.0")]
+// Application version attributes are generated from ../Version.props, independently of Gurux.DLMS.
 [assembly: System.Runtime.Versioning.SupportedOSPlatform("windows6.1")]

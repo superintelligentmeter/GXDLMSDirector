@@ -1,4 +1,5 @@
-﻿//
+// Modified by Superintelligent Meter contributors, 2026-10-30: measure native confirmation groups without changing actions. GPL-2.0-only; original notices retained.
+//
 // --------------------------------------------------------------------------
 //  Gurux Ltd
 // 
@@ -48,6 +49,7 @@ namespace GXDLMSDirector
         public GXConformanceDlg(GXConformanceSettings settings)
         {
             InitializeComponent();
+            Gurux.DLMS.UI.NativeDialogFooter.Apply(this, OKBtn, CancelBtn);
             propertyGrid1.SelectedObject = settings;
         }
 

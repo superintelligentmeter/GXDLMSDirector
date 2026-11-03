@@ -20,11 +20,13 @@ namespace GXDLMSDirector
             var icon = SystemIcons.Question.ToBitmap(); dialog.Disposed += (_, _) => icon.Dispose();
             message.Controls.Add(new PictureBox { Image = icon, SizeMode = PictureBoxSizeMode.CenterImage, Dock = DockStyle.Fill }, 0, 0);
             message.Controls.Add(new Label { Text = Properties.Resources.UpdateManufacturersOnlineTxt, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, UseCompatibleTextRendering = false, AccessibleName = "Manufacturer settings update" }, 1, 0);
-            var actions = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 52, Padding = new Padding(12, 10, 12, 10), FlowDirection = FlowDirection.RightToLeft, WrapContents = false, BackColor = SystemColors.Control, TabIndex = 1 };
+            var actions = new Gurux.DLMS.UI.ActionButtonPanel { Name = "ManufacturerPromptActions", Dock = DockStyle.Bottom, AutoSize = true, BackColor = SystemColors.Control, TabIndex = 1 };
             var yes = new Button { Text = "Yes", DialogResult = DialogResult.Yes, Size = new Size(78, 30), TabIndex = 0, UseVisualStyleBackColor = true };
             var no = new Button { Text = "No", DialogResult = DialogResult.No, Size = new Size(78, 30), TabIndex = 1, UseVisualStyleBackColor = true };
             var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Size = new Size(78, 30), TabIndex = 2, UseVisualStyleBackColor = true };
             actions.Controls.Add(cancel); actions.Controls.Add(no); actions.Controls.Add(yes);
+            Gurux.DLMS.UI.ButtonLayoutPolicy.Apply(actions, new[] { yes, no, cancel }, minimumWidth: 80, height: 28,
+                horizontalInset: 12, topInset: 10, bottomInset: 10);
             dialog.Controls.Add(message); dialog.Controls.Add(actions); dialog.AcceptButton = yes; dialog.CancelButton = cancel;
             return dialog;
         }

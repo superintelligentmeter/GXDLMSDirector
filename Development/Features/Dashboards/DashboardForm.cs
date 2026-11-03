@@ -20,6 +20,9 @@ namespace GXDLMSDirector
         private GXDLMSDevice device;
         private readonly Func<GXDLMSDevice[]> getMeters;
         private readonly string path;
+        private readonly DashboardWorkspaceStore store;
+        private readonly Func<GXDLMSDevice[], bool> connectMeters, disconnectMeters;
+        private readonly Func<bool> userOperationRunning;
         private DashboardDocument document = new();
         private readonly ComboBox dashboards = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 220 };
         private readonly NumericUpDown interval = new() { Minimum = 2, Maximum = 3600, Value = 5, Width = 65 };
@@ -48,8 +51,9 @@ namespace GXDLMSDirector
             public DateTime? Success; public bool Numeric;
             public readonly List<(DateTime Time, double Value)> Points = new();
         }
-        public DashboardForm(GXDLMSDevice device, GXDLMSObject initial = null, Func<bool> beginRead = null, Action endRead = null, Func<GXDLMSDevice[]> getMeters = null, string storagePath = null)
+        public DashboardForm(GXDLMSDevice device, GXDLMSObject initial = null, Func<bool> beginRead = null, Action endRead = null, Func<GXDLMSDevice[]> getMeters = null, string storagePath = null, DashboardWorkspaceStore store = null, Func<GXDLMSDevice[], bool> connectMeters = null, Func<GXDLMSDevice[], bool> disconnectMeters = null, Func<bool> userOperationRunning = null)
         {
+            this.userOperationRunning = userOperationRunning; this.store = store; this.connectMeters = connectMeters; this.disconnectMeters = disconnectMeters;
             this.device = device; this.getMeters = getMeters ?? (() => device == null ? Array.Empty<GXDLMSDevice>() : new[] { device }); this.beginRead = beginRead; this.endRead = endRead;
             Text = "Dashboards";
             Font = Gurux.DLMS.UI.ApplicationTypography.BodyFont;
@@ -62,9 +66,11 @@ namespace GXDLMSDirector
             autoSaveTimer.Tick += (_, _) => { if (!cardResizeInProgress) FlushAutoSave(); };
             dashboards.SelectedIndexChanged += (_, _) => { monitor.Checked = false; if (Current != null) interval.Value = Current.RefreshSeconds; Render(); };
             interval.ValueChanged += (_, _) => { if (Current != null && Current.RefreshSeconds != (int)interval.Value) { Current.RefreshSeconds = (int)interval.Value; MarkChanged(); } };
-            monitor.CheckedChanged += (_, _) => { nextRead = DateTime.MinValue; if (!monitor.Checked && busy) stopRead = true; };
+            monitor.CheckedChanged += (_, _) => { nextRead = DateTime.MinValue; if (!monitor.Checked && busy) stopRead = true; UpdateMonitorText(); };
+            // Only a click is the user's choice. Pausing it stays in force across dashboards and screens until Start is pressed.
+            monitor.Click += (_, _) => { userPaused = !monitor.Checked; UpdateMonitorText(); };
             widgets.SizeChanged += (_, _) => ResizeWidgets();
-            timer.Tick += async (_, _) => { if (!workspaceActive || !Visible || busy) return; RefreshViews(); if (monitor.Checked && DateTime.UtcNow >= nextRead) await Poll(); };
+            timer.Tick += async (_, _) => { if (!workspaceActive || !Visible || busy) return; AutoStartMonitoring(); RefreshViews(); if (monitor.Checked && DateTime.UtcNow >= nextRead) await Poll(); };
             FormClosing += (_, e) => { if (!PrepareToClose()) e.Cancel = true; };
             Shown += (_, _) => InitializeWorkspace(initial);
         }
@@ -73,14 +79,39 @@ namespace GXDLMSDirector
             if (!initialized)
             {
                 initialized = true;
-                try { if (File.Exists(path)) document = DashboardStore.Load(path); }
-                catch (Exception ex) { loadFailed = true; MessageBox.Show(DialogOwner, "Saved dashboards could not be loaded. The file has not been changed.\n" + ex.Message); }
+                LoadDocument();
                 MigrateLegacyDashboards();
-                if (document.Dashboards.Count == 0) document.Dashboards.Add(new DashboardDefinition());
-                BindDashboards(document.Dashboards[0]); if (workspaceActive) timer.Start();
+                BindDashboards(document.Dashboards.FirstOrDefault()); if (workspaceActive) timer.Start();
             }
             if (initial != null) AddObjects(initial);
         }
+        private bool documentLoaded;
+        private void LoadDocument()
+        {
+            if (documentLoaded) return;
+            documentLoaded = true;
+            if (store != null)
+            {
+                if (store.LoadError != null)
+                {
+                    loadFailed = true;
+                    MessageBox.Show(DialogOwner, "The dashboards saved in this file could not be loaded. They have not been changed.\n" + store.LoadError);
+                }
+                else document = store.Document;
+                return;
+            }
+            try { if (File.Exists(path)) document = DashboardStore.Load(path); }
+            catch (Exception ex) { loadFailed = true; MessageBox.Show(DialogOwner, "Saved dashboards could not be loaded. The file has not been changed.\n" + ex.Message); }
+        }
+        /// <summary>Load the saved dashboards so the navigation tree can list them before the workspace is opened.</summary>
+        internal void LoadNavigation()
+        {
+            if (busy) return;
+            LoadDocument();
+            MigrateLegacyDashboards();
+        }
+        /// <summary>Write pending changes to the store, for example before the meter file is saved.</summary>
+        internal bool FlushPending() => FlushAutoSave();
         internal void SetWorkspaceActive(bool active)
         {
             workspaceActive = active;
@@ -88,7 +119,7 @@ namespace GXDLMSDirector
             if (!active)
             {
                 monitor.Checked = false; stopRead = true;
-                status.Text = "Paused while viewing another workspace. Enable Monitor to resume.";
+                status.Text = "Paused while another screen is shown. Monitoring resumes when you return.";
             }
         }
         internal bool PrepareToClose()
@@ -107,7 +138,7 @@ namespace GXDLMSDirector
         }
         protected override void Dispose(bool disposing)
         {
-            if (disposing) { closing = true; stopRead = true; timer.Dispose(); autoSaveTimer.Dispose(); dashboardTips.Dispose(); valueFont.Dispose(); headingFont?.Dispose(); strongFont?.Dispose(); }
+            if (disposing) { closing = true; stopRead = true; dpiSettle.Dispose(); timer.Dispose(); autoSaveTimer.Dispose(); dashboardTips.Dispose(); valueFont.Dispose(); headingFont?.Dispose(); strongFont?.Dispose(); }
             base.Dispose(disposing);
         }
 
@@ -123,30 +154,19 @@ namespace GXDLMSDirector
         }
         private void Save()
         {
-            if (loadFailed) throw new InvalidOperationException("The existing dashboard file could not be loaded. Export your new dashboards to another file before repairing it; it will not be overwritten.");
+            if (loadFailed) throw new InvalidOperationException("The existing dashboard data could not be loaded. Changes cannot be saved until the file is repaired; the stored data will not be overwritten.");
+            if (store != null)
+            {
+                // Dashboards are part of the meter file: validate, then let the host mark the file as changed.
+                DashboardStore.Validate(document); store.Commit();
+                dirty = false; autoSaveTimer.Stop(); autoSaveFailed = false;
+                UpdateSaveIndicator("Saved with the meter file", false);
+                return;
+            }
             DashboardStore.Save(path, document); dirty = false; autoSaveTimer.Stop(); autoSaveFailed = false;
             UpdateSaveIndicator("Saved", false);
         }
 
-        private void Import()
-        {
-            using var dlg = new OpenFileDialog { Filter = "Dashboard JSON|*.json" };
-            if (dlg.ShowDialog(DialogOwner) != DialogResult.OK) return;
-            var imported = DashboardStore.Load(dlg.FileName);
-            if (imported.Version == 1)
-            {
-                if (device == null) throw new InvalidDataException("Select a meter in Add OBIS before importing a legacy single-meter dashboard.");
-                foreach (var b in imported.Dashboards.SelectMany(d => d.Widgets).SelectMany(w => w.Bindings)) { b.MeterId = device.DashboardId; b.MeterName = device.Name; }
-            }
-            if (document.Dashboards.Count + imported.Dashboards.Count > 50) throw new InvalidDataException("Maximum 50 dashboards.");
-            document.Dashboards.AddRange(imported.Dashboards); BindDashboards(imported.Dashboards.FirstOrDefault()); MarkChanged();
-        }
-        private void Export()
-        {
-            if (Current == null) return;
-            using var dlg = new SaveFileDialog { Filter = "Dashboard JSON|*.json", FileName = "dashboard.json" };
-            if (dlg.ShowDialog(DialogOwner) == DialogResult.OK) DashboardStore.Save(dlg.FileName, new DashboardDocument { Dashboards = new() { Current } });
-        }
         private DashboardMeterCatalog viewCatalog;
         private GXDLMSDevice ResolveMeter(DashboardBinding b) => (viewCatalog ?? new DashboardMeterCatalog(getMeters())).Meter(b.MeterId);
         private string MeterLabel(DashboardBinding b) => ResolveMeter(b)?.Name ?? (string.IsNullOrEmpty(b.MeterName) ? "Missing meter" : b.MeterName);
@@ -158,7 +178,7 @@ namespace GXDLMSDirector
         }
         private void MigrateLegacyDashboards()
         {
-            if (loadFailed) return;
+            if (loadFailed || store != null) return;
             foreach (var meter in getMeters())
             {
                 string identity = meter.Name + "|" + meter.MediaType + "|" + meter.MediaSettings + "|" + meter.ClientAddress + "|" + meter.LogicalAddress + "|" + meter.PhysicalAddress;
@@ -168,7 +188,7 @@ namespace GXDLMSDirector
                 try
                 {
                     var old = DashboardStore.Load(legacy);
-                    if (document.Dashboards.Count + old.Dashboards.Count > 50) { status.Text = "Legacy dashboards exceed the 50-dashboard limit. Export or remove some before migrating."; continue; }
+                    if (document.Dashboards.Count + old.Dashboards.Count > 50) { status.Text = "Legacy dashboards exceed the 50-dashboard limit. Remove some before migrating."; continue; }
                     foreach (var d in old.Dashboards)
                     {
                         foreach (var b in d.Widgets.SelectMany(w => w.Bindings)) { b.MeterId = meter.DashboardId; b.MeterName = meter.Name; }

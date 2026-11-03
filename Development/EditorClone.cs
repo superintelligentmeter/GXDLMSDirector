@@ -13,7 +13,10 @@ namespace GXDLMSDirector
             var overrides = new XmlAttributeOverrides();
             overrides.Add(typeof(GXManufacturer), nameof(GXManufacturer.Removed), new XmlAttributes { XmlIgnore = false });
             overrides.Add(typeof(GXObisCode), nameof(GXObisCode.AttributeIndex), new XmlAttributes { XmlIgnore = false });
-            var serializer = new XmlSerializer(typeof(T), overrides);
+            // Manufacturer files can contain GXDLMSAttribute instances in the
+            // base-typed attribute collection. Match the file loader's known type.
+            var serializer = new XmlSerializer(typeof(T), overrides,
+                new[] { typeof(GXDLMSAttribute) }, null, null);
             using var stream = new MemoryStream();
             serializer.Serialize(stream, source);
             stream.Position = 0;

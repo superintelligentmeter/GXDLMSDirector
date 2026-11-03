@@ -17,14 +17,16 @@ namespace GXDLMSDirector
         private Label refreshLabel;
         private Button readNow;
         private DashboardFieldHost intervalField;
-        private Label heading, connection, lastRead, selectedCount;
+        private Label heading, connection, selectedCount;
         private Panel headingActions;
         private TextBox search, widgetTitle;
         private ComboBox attribute, display, meterPicker;
         private sealed record MeterChoice(GXDLMSDevice Meter) { public override string ToString() => Meter.Name + " [" + Meter.DashboardId.Substring(0, Math.Min(6, Meter.DashboardId.Length)) + "]"; }
         private ListView objectPicker;
         private Label pickerSummary, pickerReason;
-        private Button pickerAdd, editLayoutButton;
+        private Button pickerAdd, editLayoutButton, connectButton, addObisButton;
+        private bool userPaused, dragInProgress;
+        private DateTime autoRetryAfter;
         private Panel workspaceBody, workspaceCenter, pickerViewport;
         private readonly ToolTip dashboardTips = new() { AutoPopDelay = 15000 };
         private readonly HashSet<GXDLMSObject> selectedObjects = new();
@@ -41,6 +43,21 @@ namespace GXDLMSDirector
             if (document.Dashboards.Count >= 50) throw new InvalidOperationException("Maximum 50 dashboards.");
             var d = new DashboardDefinition { Name = name }; document.Dashboards.Add(d); BindDashboards(d); MarkChanged();
             DefinitionsChanged?.Invoke(); OpenPicker(null);
+        }
+        internal void RenameDashboard(DashboardDefinition d)
+        {
+            if (busy || d == null) return;
+            var name = Ask("Dashboard name", d.Name); if (name == null) return;
+            d.Name = name; MarkChanged(); BindDashboards(Current); DefinitionsChanged?.Invoke();
+        }
+        internal void DeleteDashboard(DashboardDefinition d)
+        {
+            if (busy || d == null) return;
+            if (MessageBox.Show(DialogOwner, "Delete dashboard \"" + d.Name + "\"? This cannot be undone.", "Dashboards",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes) return;
+            bool wasCurrent = ReferenceEquals(d, Current);
+            document.Dashboards.Remove(d); MarkChanged();
+            BindDashboards(wasCurrent ? document.Dashboards.FirstOrDefault() : Current); DefinitionsChanged?.Invoke();
         }
         private int Scale(int n) => (int)Math.Round(n * DeviceDpi / 96f);
         private Button Command(string text, Action action)
@@ -64,7 +81,7 @@ namespace GXDLMSDirector
                 return TabStop && (keyData & Keys.Control) != 0 && code is Keys.Left or Keys.Right or Keys.Up or Keys.Down || base.IsInputKey(keyData);
             }
         }
-        private sealed class RoundedSurface : DashboardSurface
+        private class RoundedSurface : DashboardSurface
         {
             internal static GraphicsPath Outline(RectangleF bounds, float radius)
             {
@@ -92,15 +109,14 @@ namespace GXDLMSDirector
             header = new Panel { Dock = DockStyle.Top, Height = Scale(74), Padding = new Padding(12) };
             heading = new Label { Text = "Electrical overview", Font = headingFont, AutoEllipsis = true };
             headingActions = new Panel();
-            headingActions.Controls.Add(Command("Add OBIS", () => OpenPicker(null)));
+            connectButton = Command("Connect", ConnectBoundMeters); connectButton.Visible = false; headingActions.Controls.Add(connectButton);
+            addObisButton = Command("Add OBIS", () => OpenPicker(null)); headingActions.Controls.Add(addObisButton);
             editLayoutButton = Command("Edit layout", () => SetEditLayout(!editLayout)); headingActions.Controls.Add(editLayoutButton);
             var more = new ContextMenuStrip();
             more.Items.Add("New dashboard", null, (_, _) => NewDashboard());
-            more.Items.Add("Rename dashboard", null, (_, _) => { if (Current == null) return; var name = Ask("Dashboard name", Current.Name); if (name != null) { Current.Name = name; MarkChanged(); BindDashboards(Current); DefinitionsChanged?.Invoke(); } });
-            more.Items.Add("Delete dashboard", null, (_, _) => { if (Current != null && MessageBox.Show(DialogOwner, "Delete this dashboard?", "Dashboards", MessageBoxButtons.YesNo) == DialogResult.Yes) { document.Dashboards.Remove(Current); MarkChanged(); BindDashboards(document.Dashboards.FirstOrDefault()); DefinitionsChanged?.Invoke(); } });
-            more.Items.Add("Import...", null, (_, _) => { try { Import(); DefinitionsChanged?.Invoke(); } catch (Exception ex) { MessageBox.Show(DialogOwner, ex.Message); } });
+            more.Items.Add("Rename dashboard", null, (_, _) => RenameDashboard(Current));
+            more.Items.Add("Delete dashboard", null, (_, _) => DeleteDashboard(Current));
             more.Items.Add("Relink meter...", null, (_, _) => RelinkMeter());
-            more.Items.Add("Export...", null, (_, _) => { try { Export(); } catch (Exception ex) { MessageBox.Show(DialogOwner, ex.Message); } });
             var options = Command("More", () => { });
             options.Click += (_, _) => more.Show(options, new Point(options.Width, options.Height), ToolStripDropDownDirection.BelowLeft);
             more.Opened += (_, _) =>
@@ -117,20 +133,19 @@ namespace GXDLMSDirector
             Padding = new Padding(Scale(10));
             commands.BackColor = Color.FromArgb(246, 248, 251);
             connection = new Label { AutoSize = true, Text = "0 of 0 meters connected", ForeColor = muted };
-            lastRead = new Label { AutoSize = true, ForeColor = muted, Text = "Last success: never" };
             refreshLabel = new Label { Text = "Refresh every (s)", AutoSize = true, ForeColor = muted };
             monitor.MinimumSize = new Size(Scale(132), Scale(34)); monitor.AutoSize = false; monitor.Size = new Size(Scale(132), Scale(34)); monitor.Appearance = Appearance.Button; monitor.Text = "Start monitoring";
             readNow = Command("Read now", () => _ = Poll());
             intervalField = new DashboardFieldHost(interval) { Size = new Size(Scale(70), Scale(32)) };
-            commands.Controls.AddRange(new Control[] { connection, lastRead, refreshLabel, intervalField, readNow, monitor });
+            commands.Controls.AddRange(new Control[] { connection, refreshLabel, intervalField, readNow, monitor });
             for (int i = 0; i < commands.Controls.Count; i++) commands.Controls[i].TabIndex = i;
-            monitor.CheckedChanged += (_, _) => { monitor.Text = monitor.Checked ? "Pause monitoring" : "Start monitoring"; };
+            UpdateMonitorText();
             commands.Layout += (_, _) => AlignMonitoring();
             monitoringFrame = new RoundedSurface { Dock = DockStyle.Top, Height = Scale(60), BackColor = commands.BackColor, Padding = new Padding(Scale(12), Scale(4), Scale(12), Scale(4)) };
             monitoringFrame.Controls.Add(commands);
             workspaceCenter = new Panel { Dock = DockStyle.Fill }; workspaceCenter.Controls.Add(widgets);
             picker = new RoundedSurface { Dock = DockStyle.Right, Width = Scale(320), BackColor = Color.White, Visible = false, Padding = new Padding(Scale(14)), Margin = Padding.Empty };
-            workspaceBody = new Panel { Dock = DockStyle.Fill }; workspaceBody.Controls.Add(workspaceCenter); workspaceBody.Controls.Add(picker);
+            workspaceBody = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, Scale(10), 0, 0) }; workspaceBody.Controls.Add(workspaceCenter); workspaceBody.Controls.Add(picker);
             workspaceBody.SizeChanged += (_, _) => LayoutWorkspacePanels();
             picker.VisibleChanged += (_, _) =>
             {
@@ -143,7 +158,7 @@ namespace GXDLMSDirector
             saveIndicator = new LinkLabel { Text = "Autosave on", Dock = DockStyle.Right, Width = Scale(126), TextAlign = ContentAlignment.MiddleRight, LinkArea = new LinkArea(0, 0), TabStop = false, LinkColor = muted, ForeColor = muted, AutoEllipsis = true, AccessibleName = "Dashboard save status" };
             saveIndicator.LinkClicked += (_, _) => FlushAutoSave();
             noticeFrame.Controls.Add(status); noticeFrame.Controls.Add(saveIndicator);
-            noticeBlock = new Panel { Dock = DockStyle.Top, Height = Scale(46), Padding = new Padding(0, Scale(6), 0, Scale(6)) }; noticeFrame.Dock = DockStyle.Fill; noticeBlock.Controls.Add(noticeFrame);
+            noticeBlock = new Panel { Dock = DockStyle.Top, Height = Scale(46), Visible = false, Padding = new Padding(0, Scale(6), 0, Scale(6)) }; noticeFrame.Dock = DockStyle.Fill; noticeBlock.Controls.Add(noticeFrame);
             status.Text = "Live trends show samples collected while monitoring. No historical data loaded.";
             Controls.Add(workspaceBody); Controls.Add(noticeBlock); Controls.Add(monitoringFrame); Controls.Add(header);
             header.TabIndex = 0; workspaceBody.TabIndex = 1; monitoringFrame.TabIndex = 1; commands.TabIndex = 0; widgets.TabIndex = 1; picker.TabIndex = 2;
@@ -194,7 +209,8 @@ namespace GXDLMSDirector
             {
                 bool fullPicker = picker.Visible && ClientSize.Width - Padding.Horizontal < Scale(820);
                 workspaceCenter.Visible = !fullPicker;
-                header.Visible = !fullPicker; monitoringFrame.Visible = !fullPicker; noticeBlock.Visible = !fullPicker || autoSaveFailed;
+                header.Visible = !fullPicker; monitoringFrame.Visible = !fullPicker; // The second status bar appears only when saving fails; everything else is shown in the monitoring bar.
+                noticeBlock.Visible = autoSaveFailed;
                 picker.Dock = fullPicker ? DockStyle.Fill : DockStyle.Right;
                 if (!fullPicker) picker.Width = Math.Min(Scale(320), workspaceBody.ClientSize.Width);
                 // Dock the right-hand picker before the fill workspace; changing z-order
@@ -208,12 +224,14 @@ namespace GXDLMSDirector
         private void SetEditLayout(bool enabled)
         {
             editLayout = enabled; editLayoutButton.Text = enabled ? "Done" : "Edit layout";
+            if (enabled) monitor.Checked = false;
             status.Text = enabled ? "Drag to move; use the lower-right corner to resize. Changes save automatically." : "Layout ready. Changes save automatically.";
+            dashboardTips.SetToolTip(editLayoutButton, enabled ? "Drag cards to move them; use the lower-right corner to resize." : "Rearrange and resize cards");
             Render();
         }
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (keyData == Keys.Escape && picker.Visible) { picker.Visible = false; headingActions.Controls[0].Focus(); return true; }
+            if (keyData == Keys.Escape && picker.Visible) { picker.Visible = false; addObisButton.Focus(); return true; }
             if (keyData == Keys.Escape && editLayout) { SetEditLayout(false); editLayoutButton.Focus(); return true; }
             return base.ProcessCmdKey(ref msg, keyData);
         }
@@ -237,6 +255,7 @@ namespace GXDLMSDirector
                 int gap = Scale(4), height = Scale(32), spacing = Scale(6), width = 0;
                 foreach (Control c in headingActions.Controls)
                 {
+                    if (!c.Visible) continue;
                     c.MinimumSize = new Size(Scale(74), height);
                     int buttonWidth = DashboardCommandWidth((ButtonBase)c);
                     c.Margin = Padding.Empty; c.SetBounds(width, 0, buttonWidth, height); width += buttonWidth + spacing;
@@ -251,25 +270,37 @@ namespace GXDLMSDirector
         }
         private void AlignMonitoring()
         {
-            if (arrangingChrome || readNow == null || monitoringFrame == null) return; arrangingChrome = true;
+            if (arrangingChrome || readNow == null || monitoringFrame == null) return;
+            {
+                // The bar only needs arranging again when its wrapping, size or scale changes. A new time or a
+                // changed message is handled by the table itself; rebuilding would repaint every button.
+                int g = Scale(10);
+                Control[] r = { refreshLabel, intervalField, readNow, monitor };
+                int pref = connection.PreferredSize.Width + r.Sum(c => c is Label ? c.PreferredSize.Width : c.Width) + g * 6;
+                bool stack = commands.ClientSize.Width < r.Sum(c => c is Label ? c.PreferredSize.Width : c.Width) + g * 3;
+                string key = stack + "|" + (commands.ClientSize.Width < pref) + "|" + DeviceDpi + "|" + commands.ClientSize.Width + "|" + readNow.Text + "|" + monitor.Width;
+                if (key == lastAlignKey) return;
+                lastAlignKey = key;
+            }
+            arrangingChrome = true;
             commands.SuspendLayout();
             try
             {
                 int gap = Scale(10), row = Scale(38);
                 Control[] right = { refreshLabel, intervalField, readNow, monitor };
-                int preferred = connection.PreferredSize.Width + lastRead.PreferredSize.Width + right.Sum(c => c is Label ? c.PreferredSize.Width : c.Width) + gap * 6;
+                int preferred = connection.PreferredSize.Width + right.Sum(c => c is Label ? c.PreferredSize.Width : c.Width) + gap * 6;
                 bool wrap = commands.ClientSize.Width < preferred;
+                bool stack = wrap && commands.ClientSize.Width < right.Sum(c => c is Label ? c.PreferredSize.Width : c.Width) + gap * 3;
                 // Release old row/column assignments before shrinking the table;
                 // otherwise AutoGrow retains the former second row on restore.
                 foreach (Control c in commands.Controls) { commands.SetColumnSpan(c, 1); commands.SetCellPosition(c, new TableLayoutPanelCellPosition(0, 0)); }
-                commands.ColumnStyles.Clear(); commands.RowStyles.Clear(); commands.ColumnCount = wrap ? 4 : 7; commands.RowCount = wrap ? 2 : 1;
-                for (int i = 0; i < commands.ColumnCount; i++) commands.ColumnStyles.Add(new ColumnStyle(!wrap && i == 2 ? SizeType.Percent : SizeType.AutoSize, !wrap && i == 2 ? 100 : 0));
+                commands.ColumnStyles.Clear(); commands.RowStyles.Clear(); commands.ColumnCount = stack ? 2 : wrap ? 4 : 6; commands.RowCount = stack ? 3 : wrap ? 2 : 1;
+                for (int i = 0; i < commands.ColumnCount; i++) commands.ColumnStyles.Add(new ColumnStyle(!wrap && i == 1 ? SizeType.Percent : SizeType.AutoSize, !wrap && i == 1 ? 100 : 0));
                 for (int i = 0; i < commands.RowCount; i++) commands.RowStyles.Add(new RowStyle(SizeType.Absolute, row));
                 foreach (Control c in commands.Controls) { commands.SetColumnSpan(c, 1); c.Anchor = AnchorStyles.Left; c.Margin = new Padding(0, 0, gap, 0); }
                 commands.SetCellPosition(connection, new TableLayoutPanelCellPosition(0, 0));
-                commands.SetCellPosition(lastRead, new TableLayoutPanelCellPosition(wrap ? 2 : 1, 0));
-                if (wrap) { commands.SetColumnSpan(connection, 2); commands.SetColumnSpan(lastRead, 2); }
-                for (int i = 0; i < right.Length; i++) commands.SetCellPosition(right[i], new TableLayoutPanelCellPosition(wrap ? i : i + 3, wrap ? 1 : 0));
+                if (wrap) commands.SetColumnSpan(connection, stack ? 2 : 4);
+                for (int i = 0; i < right.Length; i++) commands.SetCellPosition(right[i], new TableLayoutPanelCellPosition(stack ? i % 2 : wrap ? i : i + 2, stack ? 1 + i / 2 : wrap ? 1 : 0));
                 monitor.Margin = Padding.Empty;
                 readNow.MinimumSize = new Size(Scale(74), Scale(32)); readNow.Height = Scale(32);
                 readNow.Width = Math.Max(Scale(74), TextRenderer.MeasureText(readNow.Text, readNow.Font).Width + Scale(24));
@@ -279,14 +310,65 @@ namespace GXDLMSDirector
             }
             finally { commands.ResumeLayout(true); arrangingChrome = false; }
         }
+        private static bool IsConnected(GXDLMSDevice m) => m.Media?.IsOpen == true && (m.Status & DeviceState.Connected) != 0;
+        private GXDLMSDevice[] BoundMeters()
+        {
+            var ids = Current?.Widgets.SelectMany(w => w.Bindings).Select(b => b.MeterId).ToHashSet() ?? new HashSet<string>();
+            return getMeters().Where(m => ids.Contains(m.DashboardId)).ToArray();
+        }
+        // One button for the meters this dashboard uses: Connect while any is down, Disconnect once all are up.
+        private void ConnectBoundMeters()
+        {
+            if (busy || connectMeters == null || disconnectMeters == null) return;
+            var bound = BoundMeters();
+            var down = bound.Where(m => !IsConnected(m)).ToArray();
+            if (down.Length > 0)
+            {
+                status.Text = connectMeters(down) ? "Connecting " + down.Length + " meter(s)..." : "Waiting for the current meter operation to finish...";
+                return;
+            }
+            if (bound.Length == 0) return;
+            monitor.Checked = false;
+            status.Text = disconnectMeters(bound) ? "Disconnecting " + bound.Length + " meter(s)..." : "Waiting for the current meter operation to finish...";
+        }
+        private void UpdateMonitorText() => monitor.Text = monitor.Checked ? "Pause monitoring" : userPaused ? "Resume monitoring" : "Start monitoring";
+        // Start by itself whenever a dashboard with connected meters is shown, unless the user paused it.
+        private void AutoStartMonitoring()
+        {
+            if (monitor.Checked || userPaused || busy || DateTime.UtcNow < autoRetryAfter) return;
+            if (Current == null || picker.Visible || editLayout || cardResizeInProgress || dragInProgress) return;
+            if (!Current.Widgets.Any(w => w.Bindings.Count > 0)) return;
+            if (!BoundMeters().Any(IsConnected)) return;
+            monitor.Checked = true;
+        }
+        private string lastStatusTip, lastAlignKey;
         private void UpdateMonitoring()
         {
             if (connection == null) return;
             var ids = Current?.Widgets.SelectMany(w => w.Bindings).Select(b => b.MeterId).Distinct().ToArray() ?? Array.Empty<string>();
-            int connected = getMeters().Count(m => ids.Contains(m.DashboardId) && m.Media?.IsOpen == true && (m.Status & DeviceState.Connected) != 0);
-            connection.Text = connected + " of " + ids.Length + " meters connected"; connection.ForeColor = connected > 0 ? Color.FromArgb(20, 120, 50) : muted;
-            var times = samples.Values.Where(s => s.Success.HasValue).Select(s => s.Success.Value).ToArray();
-            lastRead.Text = "Last success: " + (times.Length == 0 ? "never" : times.Max().ToLocalTime().ToString("HH:mm:ss")); AlignMonitoring();
+            int connected = getMeters().Count(m => ids.Contains(m.DashboardId) && IsConnected(m));
+            string state = monitor.Checked ? "Live" : userPaused ? "Paused" : picker.Visible || editLayout ? "Paused while editing" : connected == 0 ? "Waiting for a connection" : "Starting";
+            bool changed = false;
+            // Touch a control only when its content changed, so a refresh never repaints or re-lays out the bar.
+            void Set(Label label, string text, Color color)
+            {
+                if (label.Text != text) { label.Text = text; changed = true; }
+                if (label.ForeColor != color) label.ForeColor = color;
+            }
+            var shown = Current?.Widgets.SelectMany(w => w.Bindings).Select(b => b.Key).ToHashSet() ?? new HashSet<string>();
+            int failed = samples.Count(p => shown.Contains(p.Key) && p.Value.Error != null);
+            string problem = readFailed ? " · read failed" : failed > 0 ? " · " + failed + " failed" : "";
+            Set(connection, connected + " of " + ids.Length + " meters connected · " + state + problem,
+                problem.Length != 0 ? Color.Firebrick : connected > 0 ? Color.FromArgb(20, 120, 50) : muted);
+            var bound = BoundMeters();
+            // The button stays in place during a read (clicks are ignored then); hiding it would move the other buttons.
+            bool showConnection = connectMeters != null && disconnectMeters != null && bound.Length > 0;
+            string connectionText = bound.All(IsConnected) ? "Disconnect" : "Connect";
+            if (connectButton != null && (connectButton.Visible != showConnection || connectButton.Text != connectionText))
+            { connectButton.Text = connectionText; connectButton.Visible = showConnection; LayoutHeader(); }
+            // The latest status message stays available on hover instead of in a second bar.
+            if (lastStatusTip != status.Text) { lastStatusTip = status.Text; dashboardTips.SetToolTip(connection, status.Text); }
+            if (changed) AlignMonitoring();
         }
         private void RefreshMeterPicker(GXDLMSDevice preferred = null)
         {
@@ -376,16 +458,23 @@ namespace GXDLMSDirector
             Current.Widgets.Add(new DashboardWidget { Title = widgetTitle.Text.Trim(), Kind = new[] { "Values", "Trend", "Table" }[display.SelectedIndex], Bindings = selectedObjects.Select(o => new DashboardBinding { MeterId = ((GXDLMSDevice)o.Parent.Tag).DashboardId, MeterName = ((GXDLMSDevice)o.Parent.Tag).Name, ClassId = (int)o.ObjectType, Obis = o.LogicalName, Attribute = a.Index, Label = ObjectLabel(o) }).ToList() });
             MarkChanged(); Render();
         }
+        private void DiscardCards()
+        {
+            refreshViews.Clear(); layoutCards.Clear(); cardItems.Clear();
+            var old = widgets.Controls.Cast<Control>().ToArray(); widgets.Controls.Clear(); foreach (var c in old) c.Dispose();
+        }
         private void RenderWorkspace()
         {
             if (!DashboardTypographyMatchesOwner()) RestoreDashboardTypography();
             if (heading == null) return;
             PruneUnusedSamples();
             heading.Text = Current?.Name ?? "Dashboards"; dashboardTips.SetToolTip(heading, heading.Text);
-            refreshViews.Clear(); layoutCards.Clear(); cardItems.Clear(); var old = widgets.Controls.Cast<Control>().ToArray(); widgets.Controls.Clear(); foreach (var c in old) c.Dispose();
+            DiscardCards();
             if (Current == null || Current.Widgets.Count == 0)
             {
-                widgets.Controls.Add(new Label { Text = "Create your dashboard with Add OBIS.\nChoose value tiles, trend charts or tables for your meter's readable attributes.", ForeColor = muted, AutoSize = true, Location = new Point(12, 20) }); return;
+                widgets.Controls.Add(new Label { Text = Current == null
+                    ? "No dashboards yet.\nRight-click Dashboards in the tree and choose New dashboard."
+                    : "Create your dashboard with Add OBIS.\nChoose value tiles, trend charts or tables for your meter's readable attributes.", ForeColor = muted, AutoSize = true, Location = new Point(12, 20) }); return;
             }
             foreach (var item in OrderedCards())
             {
@@ -405,48 +494,57 @@ namespace GXDLMSDirector
             // Controls created on another-DPI monitor are scaled when parented.
             // Match application roles only after the complete card tree is attached.
             RestoreDashboardTypography(); ResizeWidgets(); RefreshViews();
+            foreach (Control card in widgets.Controls) HookDpiFreeze(card);
         }
-        private sealed class StatusBadge : Label
+        // A value tile is one control that draws its own text. The six labels it used to be built from were six
+        // windows per tile, and every window costs time when the application moves to a monitor with another DPI.
+        private sealed class TileSurface : RoundedSurface
         {
-            protected override void OnPaintBackground(PaintEventArgs e)
+            private readonly DashboardForm owner;
+            private string title = "", meter = "", value = "", obis = "", last = "", badge = "";
+            private Color badgeColor;
+            internal TileSurface(DashboardForm owner) { this.owner = owner; BackColor = Color.White; Padding = new Padding(1); }
+            internal void SetContent(string newTitle, string newMeter, string newValue, string newObis, string newLast, string newBadge, Color newBadgeColor)
             {
-                e.Graphics.Clear(Parent?.BackColor ?? Color.White); e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                using var path = RoundedSurface.Outline(new RectangleF(0, 0, Math.Max(1, Width - 1), Math.Max(1, Height - 1)), Height / 2f);
-                using var fill = new SolidBrush(Color.FromArgb(246, 248, 251)); e.Graphics.FillPath(fill, path);
+                if (title == newTitle && meter == newMeter && value == newValue && obis == newObis && last == newLast && badge == newBadge && badgeColor == newBadgeColor) return;
+                title = newTitle; meter = newMeter; value = newValue; obis = newObis; last = newLast; badge = newBadge; badgeColor = newBadgeColor;
+                Invalidate();
+            }
+            protected override void OnPaint(PaintEventArgs e)
+            {
+                base.OnPaint(e);
+                const TextFormatFlags flags = TextFormatFlags.NoPrefix | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis | TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine;
+                int pad = owner.Scale(14), inner = Math.Max(0, Width - pad * 2), badgeWidth = owner.Scale(62);
+                var g = e.Graphics;
+                TextRenderer.DrawText(g, title, owner.strongFont, new Rectangle(pad, pad, Math.Max(10, inner - badgeWidth - owner.Scale(28)), owner.Scale(22)), ink, flags);
+                var pill = new Rectangle(Width - pad - badgeWidth - owner.Scale(22), pad, badgeWidth, owner.Scale(20));
+                using (var path = Outline(new RectangleF(pill.X, pill.Y, Math.Max(1, pill.Width - 1), Math.Max(1, pill.Height - 1)), pill.Height / 2f))
+                using (var fill = new SolidBrush(Color.FromArgb(246, 248, 251)))
+                {
+                    var smoothing = g.SmoothingMode; g.SmoothingMode = SmoothingMode.AntiAlias; g.FillPath(fill, path); g.SmoothingMode = smoothing;
+                }
+                TextRenderer.DrawText(g, badge, owner.Font, pill, badgeColor, TextFormatFlags.NoPrefix | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis | TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine);
+                TextRenderer.DrawText(g, meter, owner.Font, new Rectangle(pad, pad + owner.Scale(25), inner, owner.Scale(20)), muted, flags);
+                TextRenderer.DrawText(g, value, owner.valueFont, new Rectangle(pad, pad + owner.Scale(48), inner, Math.Max(owner.Scale(30), Height - owner.Scale(124))), ink, flags);
+                TextRenderer.DrawText(g, obis, owner.Font, new Rectangle(pad, Height - owner.Scale(61), inner, owner.Scale(21)), muted, flags);
+                using (var pen = new Pen(border)) g.DrawLine(pen, pad, Height - owner.Scale(38), Width - pad, Height - owner.Scale(38));
+                TextRenderer.DrawText(g, last, owner.Font, new Rectangle(pad, Height - owner.Scale(30), Math.Max(0, inner - owner.Scale(12)), owner.Scale(20)), muted, flags);
             }
         }
         private Panel BuildTile(DashboardWidget w, DashboardBinding b)
         {
-            var tile = Card(); tile.Padding = new Padding(Scale(14));
-            var name = new Label { Text = b.Label, Font = strongFont, AutoEllipsis = true };
-            var badge = new StatusBadge { ForeColor = muted, TextAlign = ContentAlignment.MiddleCenter, AutoEllipsis = true };
-            var meterName = new Label { Text = MeterLabel(b), ForeColor = muted, AutoEllipsis = true };
-            var value = new Label { Font = valueFont, AutoEllipsis = true, Tag = "DashboardValue" };
-            var obis = new Label { Text = b.Obis, ForeColor = muted, AutoEllipsis = true };
-            var last = new Label { ForeColor = muted, AutoEllipsis = true };
-            tile.Controls.AddRange(new Control[] { name, badge, meterName, value, obis, last });
-            void Fit()
-            {
-                int pad = Scale(14), inner = Math.Max(0, tile.Width - pad * 2), badgeWidth = Scale(62);
-                name.SetBounds(pad, pad, Math.Max(10, inner - badgeWidth - Scale(28)), Scale(22));
-                badge.SetBounds(tile.Width - pad - badgeWidth - Scale(22), pad, badgeWidth, Scale(20));
-                meterName.SetBounds(pad, pad + Scale(25), inner, Scale(20));
-                value.SetBounds(pad, pad + Scale(48), inner, Math.Max(Scale(30), tile.Height - Scale(124)));
-                obis.SetBounds(pad, tile.Height - Scale(61), inner, Scale(21));
-                last.SetBounds(pad, tile.Height - Scale(30), inner - Scale(12), Scale(20));
-            }
-            tile.SizeChanged += (_, _) => Fit(); Fit();
-            tile.Paint += (_, e) => { using var pen = new Pen(border); e.Graphics.DrawLine(pen, Scale(14), tile.Height - Scale(38), tile.Width - Scale(14), tile.Height - Scale(38)); };
-            dashboardTips.SetToolTip(name, b.Label);
+            var tile = new TileSurface(this);
+            string tip = null;
             refreshViews.Add(() =>
             {
                 var sample = State(b.Key); string quality = Quality(b);
-                meterName.Text = MeterLabel(b); value.Text = sample.Text + (string.IsNullOrEmpty(sample.Unit) ? "" : " " + sample.Unit);
-                badge.Text = quality == "Disconnected" ? "Offline" : quality.StartsWith("Meter missing") || quality.StartsWith("Object missing") ? "Missing" : quality == "Fresh" ? "Live" : quality == "Not read" ? "Not read" : quality == "Stale" ? "Stale" : "Error";
-                badge.ForeColor = quality == "Fresh" ? Color.FromArgb(20, 120, 50) : sample.Error != null ? Color.Firebrick : muted;
-                last.Text = "Last success: " + (sample.Success?.ToLocalTime().ToString("HH:mm:ss") ?? "never");
-                dashboardTips.SetToolTip(value, sample.Text + " " + sample.Unit); dashboardTips.SetToolTip(meterName, MeterLabel(b));
-                dashboardTips.SetToolTip(badge, quality + (sample.Error == null ? "" : "\n" + sample.Error));
+                string meter = MeterLabel(b), valueText = sample.Text + (string.IsNullOrEmpty(sample.Unit) ? "" : " " + sample.Unit);
+                string badge = quality == "Disconnected" ? "Offline" : quality.StartsWith("Meter missing") || quality.StartsWith("Object missing") ? "Missing" : quality == "Fresh" ? "Live" : quality == "Not read" ? "Not read" : quality == "Stale" ? "Stale" : "Error";
+                tile.SetContent(b.Label, meter, valueText, b.Obis, "Last success: " + (sample.Success?.ToLocalTime().ToString("HH:mm:ss") ?? "never"), badge,
+                    quality == "Fresh" ? Color.FromArgb(20, 120, 50) : sample.Error != null ? Color.Firebrick : muted);
+                // One tip for the whole tile, changed only when its text changes.
+                string newTip = b.Label + "\n" + meter + " | " + b.Obis + "\n" + valueText + "\n" + quality + (sample.Error == null ? "" : "\n" + sample.Error);
+                if (tip != newTip) { tip = newTip; dashboardTips.SetToolTip(tile, newTip); }
             });
             return tile;
         }

@@ -1,4 +1,4 @@
-﻿//
+//
 // --------------------------------------------------------------------------
 //  Gurux Ltd
 //
@@ -42,11 +42,11 @@ namespace GXDLMS.Common
         {
             if (string.IsNullOrEmpty(Ex.HelpLink))
             {
-                System.Windows.Forms.MessageBox.Show(owner, Ex.Message, "GXDLMSDirector", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error, System.Windows.Forms.MessageBoxDefaultButton.Button1, 0);
+                Gurux.DLMS.UI.ApplicationMessageBox.Show(owner, Ex.Message, "GXDLMSDirector", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error, System.Windows.Forms.MessageBoxDefaultButton.Button1, 0);
             }
             else
             {
-                System.Windows.Forms.MessageBox.Show(owner, Ex.Message, "GXDLMSDirector", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error, System.Windows.Forms.MessageBoxDefaultButton.Button1, 0, Ex.HelpLink);
+                Gurux.DLMS.UI.ApplicationMessageBox.Show(owner, Ex.Message, "GXDLMSDirector", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error, System.Windows.Forms.MessageBoxDefaultButton.Button1, 0, Ex.HelpLink);
             }
         }
 
@@ -110,22 +110,22 @@ namespace GXDLMS.Common
                 {
                     if (Ex.HelpLink != null)
                     {
-                        System.Windows.Forms.MessageBox.Show(null, Ex.Message, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error, System.Windows.Forms.MessageBoxDefaultButton.Button1, 0, Ex.HelpLink);
+                        Gurux.DLMS.UI.ApplicationMessageBox.Show(null, Ex.Message, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error, System.Windows.Forms.MessageBoxDefaultButton.Button1, 0, Ex.HelpLink);
                     }
                     else
                     {
-                        System.Windows.Forms.MessageBox.Show(null, Ex.Message, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                        Gurux.DLMS.UI.ApplicationMessageBox.Show(null, Ex.Message, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                     }
                 }
                 else
                 {
                     if (Ex.HelpLink != null)
                     {
-                        System.Windows.Forms.MessageBox.Show(owner, Ex.Message, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error, System.Windows.Forms.MessageBoxDefaultButton.Button1, 0, Ex.HelpLink);
+                        Gurux.DLMS.UI.ApplicationMessageBox.Show(owner, Ex.Message, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error, System.Windows.Forms.MessageBoxDefaultButton.Button1, 0, Ex.HelpLink);
                     }
                     else
                     {
-                        System.Windows.Forms.MessageBox.Show(owner, Ex.Message, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                        Gurux.DLMS.UI.ApplicationMessageBox.Show(owner, Ex.Message, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                     }
                 }
             }

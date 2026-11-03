@@ -17,7 +17,7 @@ namespace GXDLMSDirector
         {
             var headerRow = new TableLayoutPanel { Dock = DockStyle.Top, Height = Scale(40), ColumnCount = 2, RowCount = 1, Margin = Padding.Empty };
             headerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100)); headerRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            var title = new Label { Text = "Add OBIS objects", Font = strongFont, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft };
+            var title = new Label { Text = "Add OBIS", Font = strongFont, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft };
             var close = Command("Close", () => { picker.Visible = false; ResizeWidgets(); }); close.Anchor = AnchorStyles.Right; close.Margin = Padding.Empty;
             headerRow.Controls.Add(title, 0, 0); headerRow.Controls.Add(close, 1, 0);
             var footer = new TableLayoutPanel { Dock = DockStyle.Bottom, Height = Scale(46), ColumnCount = 2, RowCount = 1, Margin = Padding.Empty };

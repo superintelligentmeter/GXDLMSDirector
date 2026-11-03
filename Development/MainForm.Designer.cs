@@ -1757,12 +1757,12 @@ namespace GXDLMSDirector
             this.tabControl1.Margin = new System.Windows.Forms.Padding(0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(200, 620);
+            this.tabControl1.Size = new System.Drawing.Size(280, 620);
             this.tabControl1.TabIndex = 10;
             // 
             // splitter1
             // 
-            this.splitter1.Location = new System.Drawing.Point(200, 49);
+            this.splitter1.Location = new System.Drawing.Point(280, 49);
             this.splitter1.Name = "splitter1";
             this.splitter1.Size = new System.Drawing.Size(1, 620);
             this.splitter1.TabIndex = 11;

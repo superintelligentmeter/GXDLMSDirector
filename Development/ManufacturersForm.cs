@@ -1,3 +1,5 @@
+// Modified by Superintelligent Meter contributors, 2026-10-31: Update Online through ManufacturerSettingsStore on .NET 10. GPL-2.0-only; original notices retained.
+// Modified by Superintelligent Meter contributors, 2026-10-30: separate online and native confirmation footer groups. GPL-2.0-only; original notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-29: preserve spacing above manufacturer actions while resizing. GPL-2.0-only; existing notices retained.
 // Modified for the superintelligentmeter fork, 2026-10-16: .NET 10 migration, UI modernization and compatibility fixes. GPL-2.0-only; original notices retained.
 //
@@ -8,7 +10,7 @@
 //
 //
 // Version:         $Revision: 12483 $,
-//                  $Date: 2021-06-07 12:52:24 +0300 (ma, 07 kesä 2021) $
+//                  $Date: 2021-06-07 12:52:24 +0300 (ma, 07 kesÃƒÂ¤ 2021) $
 //                  $Author: gurux01 $
 //
 // Copyright (c) Gurux Ltd
@@ -50,6 +52,7 @@ namespace GXDLMSDirector
         public ManufacturersForm(GXManufacturerCollection manufacturers, string selectedManufacturer)
         {
             InitializeComponent();
+            ConfigureConfirmationFooter();
             SupportedInterfacesTb.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             SupportedInterfacesTb.ScrollBars = ScrollBars.Vertical;
             NameTB.Anchor = ManufacturerIdTB.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
@@ -80,6 +83,14 @@ namespace GXDLMSDirector
                     ManufacturersList.Items[0].Selected = true;
                 }
             }
+        }
+
+        // Keep the online workflow separate from native confirmation actions.
+        private void ConfigureConfirmationFooter()
+        {
+            SettingsDialogLayout.ApplySplitActions(panel1, new[] { DownloadLatestBtn }, new[] { OKBtn, CancelBtn },
+                name: "ManufacturerConfirmationActions");
+            AcceptButton = OKBtn; CancelButton = CancelBtn;
         }
 
         ListViewItem AddManufacturer(GXManufacturer manufacturer)
@@ -245,7 +256,7 @@ namespace GXDLMSDirector
                     if (MessageBox.Show(this, Properties.Resources.UpdateManufacturersOnlineTxt,
                         Properties.Resources.GXDLMSDirectorTxt, MessageBoxButtons.YesNoCancel) == DialogResult.Yes)
                     {
-                        GXManufacturerCollection.UpdateManufactureSettings();
+                        ManufacturerSettingsStore.UpdateManufactureSettings();
                         Manufacturers = new GXManufacturerCollection();
                         GXManufacturerCollection.ReadManufacturerSettings(Manufacturers);
                     }

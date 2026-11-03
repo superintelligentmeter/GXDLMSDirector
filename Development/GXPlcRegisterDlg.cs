@@ -1,3 +1,4 @@
+﻿// Modified by Superintelligent Meter contributors, 2026-10-30: measure native confirmation groups without changing actions. GPL-2.0-only; original notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-30: align and bound native property inputs. GPL-2.0-only; existing notices retained.
 ﻿//
 // --------------------------------------------------------------------------
@@ -51,7 +52,8 @@ namespace GXDLMSDirector
         public GXPlcRegisterDlg(byte[] activeInitiatorSystemTitle, byte[] newSystemTitle)
         {
             InitializeComponent();
-            DirectorPropertyRows.AlignNativeRows(this, (ActiveInitiatorLbl, ActiveInitiatorTb), (SystemTitleLbl, SystemTitleTb), (MACAddressLbl, MACAddressTb));
+            Gurux.DLMS.UI.NativeDialogFooter.Apply(this, OkBtn, CancelBtn);
+            DirectorPropertyRows.AlignNativeRows(ActiveInitiatorTb.Parent, (ActiveInitiatorLbl, ActiveInitiatorTb), (SystemTitleLbl, SystemTitleTb), (MACAddressLbl, MACAddressTb));
             ActiveInitiatorTb.Text = GXDLMSTranslator.ToHex(activeInitiatorSystemTitle);
             SystemTitleTb.Text = GXDLMSTranslator.ToHex(newSystemTitle);
         }

@@ -154,7 +154,7 @@ namespace GXDLMSDirector
                         var now = c.PointToScreen(e.Location); var size = SystemInformation.DragSize;
                         if (Math.Abs(now.X - start.Value.X) < size.Width / 2 && Math.Abs(now.Y - start.Value.Y) < size.Height / 2) return;
                         start = null; monitor.Checked = false;
-                        try { c.DoDragDrop(new CardDrag(this, item), DragDropEffects.Move); } finally { ClearDropTarget(); }
+                        try { dragInProgress = true; c.DoDragDrop(new CardDrag(this, item), DragDropEffects.Move); } finally { dragInProgress = false; ClearDropTarget(); }
                     };
                     c.MouseUp += (_, _) => start = null;
                 }

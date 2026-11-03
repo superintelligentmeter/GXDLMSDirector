@@ -1,3 +1,4 @@
+// superintelligentmeter contributors, 2026-10-30: retain native addressing editors in measured rows across monitor scales. GPL-2.0-only; original notices retained.
 // Superintelligent Meter contributors, 2026-10-30: stable settings layout and aligned bounded property rows. GPL-2.0-only; original notices retained.
 //
 // --------------------------------------------------------------------------
@@ -206,10 +207,43 @@ namespace GXDLMSDirector
             DirectorPropertyRows.Span(general, UseUtcTimeZone);
             DirectorPropertyRows.Row(general, IecAddressLbl, IecAddressTb);
 
-            // Existing authentication/client/server subgroups intentionally retain their
-            // compact numeric pairs and formula layout inside this bounded section.
-            Gurux.DLMS.UI.EditorLayoutPolicy.ConstrainSection(AddressingGB);
-            DirectorPropertyRows.Span(general, AddressingGB);
+            // Preserve the bound native editors, but replace fixed coordinates
+            // in the two presentation-only subgroups. The original paired server
+            // addresses could overflow and overlap after a monitor-scale change.
+            AddressingGB.SuspendLayout();
+            try
+            {
+                AddressingGB.AutoSize = true;
+                AddressingGB.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                var addressing = DirectorPropertyRows.Create(AddressingGB, "ManufacturerAddressingFields");
+                DirectorPropertyRows.Row(addressing, AuthenticationLbl, AuthenticationCB);
+                void Heading(GroupBox original)
+                {
+                    var heading = new Label { Text = original.Text, AutoSize = true,
+                        Font = original.Font, ForeColor = original.ForeColor, TabStop = false };
+                    DirectorPropertyRows.Span(addressing, heading);
+                }
+                Control CompactAddress(Control editor)
+                {
+                    editor.Width = (int)System.Math.Round(120 * AddressingGB.DeviceDpi / 96d);
+                    return DirectorPropertyRows.Compact(editor);
+                }
+                Heading(groupBox2);
+                DirectorPropertyRows.Row(addressing, ClientAddLbl, CompactAddress(ClientAddTB));
+                Heading(groupBox1);
+                DirectorPropertyRows.Row(addressing, label3, ServerAddressTypeCB);
+                DirectorPropertyRows.Row(addressing, SerialNumberFormulaLbl, SerialNumberFormulaTB);
+                DirectorPropertyRows.Row(addressing, PhysicalServerAddLbl, CompactAddress(PhysicalServerAddTB));
+                DirectorPropertyRows.Row(addressing, LogicalServerAddLbl, CompactAddress(LogicalServerAddTB));
+                DirectorPropertyRows.Row(addressing, SizeLbl, CompactAddress(SizeCb));
+                AddressingGB.Controls.Remove(groupBox1);
+                AddressingGB.Controls.Remove(groupBox2);
+                groupBox1.Dispose();
+                groupBox2.Dispose();
+                Gurux.DLMS.UI.EditorLayoutPolicy.ConstrainSection(AddressingGB);
+                DirectorPropertyRows.Span(general, AddressingGB);
+            }
+            finally { AddressingGB.ResumeLayout(true); }
 
             tabPage3.AutoScroll = true;
             var security = DirectorPropertyRows.Create(tabPage3, "ManufacturerSecurityFields");

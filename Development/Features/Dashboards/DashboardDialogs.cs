@@ -2,6 +2,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Gurux.DLMS.UI;
 namespace GXDLMSDirector
 {
     internal abstract class DashboardDialog : Form
@@ -10,12 +11,16 @@ namespace GXDLMSDirector
         protected readonly DashboardButton Confirm = new() { Text = "OK", DialogResult = DialogResult.OK, BackColor = Color.White, ForeColor = Color.FromArgb(24, 48, 78) };
         protected DashboardDialog(Font font, string title, Size size)
         {
-            AutoScaleMode = AutoScaleMode.Dpi; Font = font; Text = title; ClientSize = size;
+            // Start from the application's body font, like every other dialog. A font copied from the embedded dashboard
+            // is already adjusted for its monitor and would be scaled a second time when the dialog opens.
+            AutoScaleMode = AutoScaleMode.Dpi; Font = ApplicationTypography.BodyFont; Text = title; ClientSize = size;
             FormBorderStyle = FormBorderStyle.FixedDialog; MinimizeBox = false; MaximizeBox = false; ShowInTaskbar = false; StartPosition = FormStartPosition.CenterParent; BackColor = Color.White;
-            var actions = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 50, FlowDirection = FlowDirection.RightToLeft, WrapContents = false, Padding = new Padding(10, 6, 10, 10) };
+            var actions = new ActionButtonPanel { Name = "DashboardDialogActions", Dock = DockStyle.Bottom, AutoSize = true };
             var cancel = new DashboardButton { Text = "Cancel", DialogResult = DialogResult.Cancel, BackColor = Color.White, ForeColor = Color.FromArgb(24, 48, 78), Size = new Size(82, 30), TabIndex = 1 };
             Confirm.Size = new Size(82, 30); Confirm.TabIndex = 0;
             actions.Controls.Add(cancel); actions.Controls.Add(Confirm); actions.TabIndex = 1; Content.TabIndex = 0;
+            ButtonLayoutPolicy.Apply(actions, new Button[] { Confirm, cancel }, minimumWidth: 100, height: 32,
+                horizontalInset: 16, topInset: 6, bottomInset: 10);
             Controls.Add(Content); Controls.Add(actions); AcceptButton = Confirm; CancelButton = cancel;
         }
     }
@@ -37,14 +42,14 @@ namespace GXDLMSDirector
     {
         internal readonly ComboBox From = new() { Dock = DockStyle.Fill, DropDownStyle = ComboBoxStyle.DropDownList, AccessibleName = "Saved meter binding", TabIndex = 0 };
         internal readonly ComboBox To = new() { Dock = DockStyle.Fill, DropDownStyle = ComboBoxStyle.DropDownList, AccessibleName = "Replace with loaded meter", TabIndex = 1 };
-        internal DashboardRelinkDialog(Font font, string[] sources, object[] meters) : base(font, "Relink meter for this dashboard", new Size(490, 240))
+        internal DashboardRelinkDialog(Font font, string[] sources, object[] meters) : base(font, "Relink meter for this dashboard", new Size(490, 280))
         {
             var fields = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 5, Margin = Padding.Empty };
             fields.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            foreach (int height in new[] { 25, 40, 25, 40, 28 }) fields.RowStyles.Add(new RowStyle(SizeType.Absolute, height));
+            foreach (int height in new[] { 25, 40, 25, 40, 36 }) fields.RowStyles.Add(new RowStyle(SizeType.Absolute, height));
             fields.Controls.Add(new Label { Text = "Saved meter binding", Dock = DockStyle.Fill }, 0, 0); fields.Controls.Add(DashboardFieldHost.Wrap(From), 0, 1);
             fields.Controls.Add(new Label { Text = "Replace with loaded meter", Dock = DockStyle.Fill }, 0, 2); fields.Controls.Add(DashboardFieldHost.Wrap(To), 0, 3);
-            fields.Controls.Add(new Label { Text = "Only bindings in the current dashboard will change.", Dock = DockStyle.Fill, AutoEllipsis = true }, 0, 4);
+            fields.Controls.Add(new Label { Text = "Only bindings in the current dashboard will change.", Dock = DockStyle.Fill, AutoEllipsis = true, TextAlign = ContentAlignment.TopLeft, Padding = new Padding(0, 4, 0, 0) }, 0, 4);
             Content.Controls.Add(fields); From.Margin = To.Margin = new Padding(0, 0, 0, 8);
             From.Items.AddRange(sources); To.Items.AddRange(meters); Confirm.Text = "Relink";
             void Update() { Confirm.Enabled = From.SelectedIndex >= 0 && To.SelectedIndex >= 0; }

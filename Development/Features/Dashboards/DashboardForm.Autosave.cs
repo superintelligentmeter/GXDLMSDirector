@@ -8,7 +8,7 @@ namespace GXDLMSDirector
     {
         private readonly Timer autoSaveTimer = new() { Interval = 400 };
         private LinkLabel saveIndicator;
-        private bool autoSaveFailed, cardResizeInProgress;
+        private bool autoSaveFailed, cardResizeInProgress, readFailed;
         private void MarkChanged()
         {
             dirty = true;
@@ -35,7 +35,7 @@ namespace GXDLMSDirector
             saveIndicator.LinkArea = failed ? new LinkArea(0, text.Length) : new LinkArea(0, 0);
             saveIndicator.TabStop = failed;
             saveIndicator.AccessibleDescription = failed ? "Changes have not been saved. Activate to retry." : text;
-            if (!failed) dashboardTips.SetToolTip(saveIndicator, text);
+            if (!failed) { dashboardTips.SetToolTip(saveIndicator, text); LayoutWorkspacePanels(); }
         }
     }
 }

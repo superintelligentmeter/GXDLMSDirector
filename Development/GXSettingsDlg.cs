@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-30: measure native confirmation groups without changing actions. GPL-2.0-only; original notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-30: align bounded notification input rows. GPL-2.0-only; original notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-29: keep notification fields reachable in shorter settings windows. GPL-2.0-only; existing notices retained.
 //
@@ -79,6 +80,9 @@ namespace GXDLMSDirector
         {
             _eventsTranslator = eventsTranslator;
             InitializeComponent();
+            Gurux.DLMS.UI.NativeDialogFooter.ApplyToPanel(this, panel1, OKBtn, CancelBtn);
+            SettingsDialogLayout.ApplySplitActions(panel2, new[] { CheckUpdatesBtn }, new[] { AddBtn, RemoveBtn },
+                MediaList, "ExternalMediaActions");
             // Media property pages are taller than the original notification viewport.
             // Keep every field reachable when the settings window is shortened.
             NotificationsView.AutoScroll = true;

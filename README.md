@@ -61,3 +61,9 @@ Dashboard definitions are stored separately from meter files. Save the meter fil
 Keep the original Gurux copyright, GPL and third-party notices intact. Fork modifications and their notices are recorded in [MODIFICATIONS](MODIFICATIONS); dependency notices are in [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES).
 
 Before distributing executables, installers or dependency DLLs, provide complete corresponding source for the exact versions of both forks and all covered dependencies, including unchanged Gurux libraries, alongside the binary download. Preserve the build and installation scripts, license notices, and notices for any bundled runtime; verify that the source builds and that the release archive contains those notices. A source repository or screenshot does not by itself satisfy every binary-release obligation.
+
+## Community Edition versioning
+
+The application has an independent `MAJOR.MINOR.PATCH` version, optionally suffixed with `-preview.N`. `Version.props` is the authoritative application version used by the build and installer. Increment PATCH for compatible fixes, MINOR for compatible features, and MAJOR for changes that break compatibility with supported saved files or extension interfaces. Clear `VersionSuffix` for a stable release.
+
+About shows the application version and the actual loaded Gurux.DLMS library version separately. Updating the Gurux dependency does not automatically change the application version. Releases identify the exact Director and UI-library commits and include the corresponding source and dependency notices.

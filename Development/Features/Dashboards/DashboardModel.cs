@@ -80,6 +80,18 @@ namespace GXDLMSDirector
                 }
             }
         }
+        public static DashboardDocument Parse(string json)
+        {
+            if (json == null || json.Length > 2 * 1024 * 1024) throw new InvalidDataException("Dashboard data exceeds 2 MB.");
+            var doc = JsonSerializer.Deserialize<DashboardDocument>(json);
+            Validate(doc);
+            return doc;
+        }
+        public static string Serialize(DashboardDocument doc)
+        {
+            Validate(doc);
+            return JsonSerializer.Serialize(doc);
+        }
         public static DashboardDocument Load(string path)
         {
             if (new FileInfo(path).Length > 2 * 1024 * 1024) throw new InvalidDataException("Dashboard file exceeds 2 MB.");

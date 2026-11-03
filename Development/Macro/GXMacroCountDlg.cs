@@ -1,3 +1,4 @@
+// Modified by Superintelligent Meter contributors, 2026-10-30: measure native confirmation groups without changing actions. GPL-2.0-only; original notices retained.
 // Modified by Superintelligent Meter contributors, 2026-10-29: offline UI review and dialog correctness fixes. GPL-2.0-only; existing notices retained.
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace GXDLMSDirector.Macro
         public GXMacroCountDlg()
         {
             InitializeComponent();
+            Gurux.DLMS.UI.NativeDialogFooter.Apply(this, OKBtn, CancelBtn);
             CountTb.Text = Properties.Settings.Default.MacroEditorInvokeCount.ToString();
         }
 
